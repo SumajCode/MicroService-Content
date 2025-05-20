@@ -1,0 +1,1 @@
+from .cursos import init_cursos_routes
