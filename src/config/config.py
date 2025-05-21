@@ -6,7 +6,10 @@ load_dotenv()
 
 class Config:
     # Configuración de MongoDB
-    MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/cursos_db')
+    MONGO_URI = os.getenv('MONGO_URI')
+    if not MONGO_URI:
+        raise ValueError("MONGO_URI no está definido en las variables de entorno")
+
     
     # Configuración de JWT
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'clave-secreta-desarrollo')
