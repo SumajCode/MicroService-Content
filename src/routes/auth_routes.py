@@ -56,6 +56,7 @@ def init_auth_routes():
             }), 200
             
         except Exception as e:
+            print(f"Error en login: {str(e)}")
             return jsonify({"error": str(e)}), 500
     
     return auth_bp

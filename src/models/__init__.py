@@ -1,1 +1,1 @@
-from .curso import Curso
+from .curso_model import CursoModel
