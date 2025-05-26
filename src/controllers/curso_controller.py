@@ -1,11 +1,11 @@
 from flask import request, jsonify
 from werkzeug.exceptions import BadRequest
-from src.services.mongo_service import MongoService
-from src.services.mega_service import MegaService
-from src.services.api_externa_service import ApiExternaService
-from src.models.archivo_model import ArchivoModel, CarpetaUsuarioModel
-from src.utils.file_utils import FileUtils
-from src.config.settings import Config
+from services.mongo_service import MongoService
+from services.mega_service import MegaService
+from services.api_externa_service import ApiExternaService
+from models.archivo_model import ArchivoModel, CarpetaUsuarioModel
+from utils.file_utils import FileUtils
+from config.settings import Config
 import logging
 import os
 import tempfile
