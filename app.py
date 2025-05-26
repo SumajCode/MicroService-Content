@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
-from src.routes.archivo_routes import archivo_bp, usuario_bp
-from src.config.settings import Config
+from routes.archivo_routes import archivo_bp, usuario_bp
+from config.settings import Config
 import logging
 
 # Configurar logging
