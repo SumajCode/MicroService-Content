@@ -1,116 +1,48 @@
 from datetime import datetime
+from typing import Dict, List, Optional
 from bson import ObjectId
 
-class CursoModel:
-    def __init__(self, db):
-        self.collection = db.cursos
+class ArchivoModel:
+    def __init__(self):
+        self.collection_name = "archivos_subidos"
     
-    def agregar_curso(self, datos):
-        """
-        Agrega un nuevo curso a la base de datos
-        """
-        nuevo_curso = {
-            "nombre": datos.get("nombre"),
-            "descripcion": datos.get("descripcion", ""),
-            "docente_id": datos.get("docente_id"),
-            "estado": datos.get("estado", "borrador"),
-            "temas": datos.get("temas", []),
-            "archivos": datos.get("archivos", []),
-            "creado_en": datetime.utcnow(),
-            "actualizado_en": datetime.utcnow()
+    @staticmethod
+    def crear_documento_archivo(
+        usuario_id: str,
+        nombre_usuario: str,
+        tipo_contenido: str,
+        archivo_info: Dict,
+        etiquetas: Optional[List[str]] = None
+    ) -> Dict:
+        """Crea un documento para insertar en MongoDB"""
+        return {
+            "usuario_id": usuario_id,
+            "nombre_usuario": nombre_usuario,
+            "tipo_contenido": tipo_contenido,
+            "archivo": {
+                "nombre": archivo_info.get("nombre"),
+                "tipo": archivo_info.get("mime"),
+                "peso": archivo_info.get("peso_bytes"),
+                "link": archivo_info.get("link", ""),
+                "ruta": archivo_info.get("ruta", "")
+            },
+            "fecha_subida": datetime.utcnow(),
+            "etiquetas": etiquetas or [],
+            "estado": "activo"
         }
-        
-        resultado = self.collection.insert_one(nuevo_curso)
-        return str(resultado.inserted_id)
+
+class CarpetaUsuarioModel:
+    def __init__(self):
+        self.collection_name = "carpetas_usuarios"
     
-    def editar_curso(self, curso_id, datos):
-        """
-        Edita un curso existente
-        """
-        # Asegurarse de que no se modifique el ID
-        if "_id" in datos:
-            del datos["_id"]
-        
-        # Actualizar la fecha de modificación
-        datos["actualizado_en"] = datetime.utcnow()
-        
-        resultado = self.collection.update_one(
-            {"_id": ObjectId(curso_id)},
-            {"$set": datos}
-        )
-        
-        return resultado.modified_count > 0
-    
-    def obtener_cursos_por_docente(self, docente_id):
-        """
-        Obtiene todos los cursos de un docente específico
-        """
-        try:
-            cursos = list(self.collection.find({"docente_id": int(docente_id)}))
-            return self._formatear_cursos(cursos)
-        except Exception as e:
-            print(f"Error al obtener cursos por docente: {str(e)}")
-            return []
-    
-    def obtener_todos_los_cursos(self, estado=None):
-        """
-        Obtiene todos los cursos, opcionalmente filtrados por estado
-        """
-        try:
-            filtro = {}
-            if estado:
-                filtro["estado"] = estado
-                
-            cursos = list(self.collection.find(filtro))
-            return self._formatear_cursos(cursos)
-        except Exception as e:
-            print(f"Error al obtener todos los cursos: {str(e)}")
-            return []
-    
-    def eliminar_curso(self, curso_id, eliminacion_logica=True):
-        """
-        Elimina un curso o lo marca como suspendido
-        """
-        try:
-            if eliminacion_logica:
-                # Eliminación lógica (cambiar estado a "suspendido")
-                resultado = self.collection.update_one(
-                    {"_id": ObjectId(curso_id)},
-                    {
-                        "$set": {
-                            "estado": "suspendido",
-                            "fecha_suspension": datetime.utcnow(),
-                            "actualizado_en": datetime.utcnow()
-                        }
-                    }
-                )
-                return resultado.modified_count > 0
-            else:
-                # Eliminación física
-                resultado = self.collection.delete_one({"_id": ObjectId(curso_id)})
-                return resultado.deleted_count > 0
-        except Exception as e:
-            print(f"Error al eliminar curso: {str(e)}")
-            return False
-    
-    def obtener_curso_por_id(self, curso_id):
-        """
-        Obtiene un curso por su ID
-        """
-        try:
-            curso = self.collection.find_one({"_id": ObjectId(curso_id)})
-            if curso:
-                curso["_id"] = str(curso["_id"])
-                return curso
-            return None
-        except Exception as e:
-            print(f"Error al obtener curso por ID: {str(e)}")
-            return None
-    
-    def _formatear_cursos(self, cursos):
-        """
-        Formatea los IDs de ObjectId a string para la respuesta JSON
-        """
-        for curso in cursos:
-            curso["_id"] = str(curso["_id"])
-        return cursos
+    @staticmethod
+    def crear_documento_carpeta(usuario_id: str, nombre_usuario: str) -> Dict:
+        """Crea un documento para carpetas de usuario"""
+        return {
+            "usuario_id": usuario_id,
+            "nombre_usuario": nombre_usuario,
+            "carpetas": {
+                "personal": {"ruta": f"/Contenido Personal/{usuario_id}/"},
+                "educativo": {"ruta": f"/Contenido Educativo/{usuario_id}/"}
+            }
+        }
