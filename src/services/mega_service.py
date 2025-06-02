@@ -2,6 +2,7 @@ from mega import Mega
 from typing import Optional, Dict
 import logging
 import os
+import tempfile
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ class MegaService:
             logger.error(f"Error al crear carpeta {ruta}: {e}")
             return False
     
-    def subir_archivo(self, archivo_path: str, carpeta_destino: str, nombre_archivo: str) -> Optional[str]:
+    def subir_archivo(self, archivo_path: str, carpeta_destino: str, nombre_archivo: str) -> Optional[Dict]:
         """Sube un archivo a MEGA"""
         try:
             # Crear carpeta si no existe
@@ -76,30 +77,72 @@ class MegaService:
             
             # Obtener link público
             link = self.m.get_upload_link(file_handle)
+            
             logger.info(f"Archivo subido exitosamente: {nombre_archivo}")
-            return link
+            return {
+                "link": link,
+                "node_id": file_handle
+            }
             
         except Exception as e:
             logger.error(f"Error al subir archivo: {e}")
             return None
     
-    def eliminar_archivo(self, ruta_archivo: str) -> bool:
-        """Elimina un archivo de MEGA"""
+    def descargar_archivo(self, node_id: str) -> Optional[str]:
+        """Descarga un archivo de MEGA y retorna la ruta temporal"""
         try:
-            archivos = self.m.get_files()
+            # Crear directorio temporal
+            temp_dir = tempfile.mkdtemp()
             
-            for file_id, file_info in archivos.items():
-                if (file_info['a'] and 
-                    file_info['a'].get('n') in ruta_archivo):
-                    self.m.delete(file_id)
-                    logger.info(f"Archivo eliminado: {ruta_archivo}")
-                    return True
+            # Descargar archivo
+            archivo_descargado = self.m.download(node_id, temp_dir)
             
-            logger.warning(f"Archivo no encontrado: {ruta_archivo}")
-            return False
+            logger.info(f"Archivo descargado: {archivo_descargado}")
+            return archivo_descargado
+            
+        except Exception as e:
+            logger.error(f"Error al descargar archivo: {e}")
+            return None
+    
+    def eliminar_archivo(self, node_id: str) -> bool:
+        """Elimina un archivo de MEGA usando su node_id"""
+        try:
+            self.m.delete(node_id)
+            logger.info(f"Archivo eliminado: {node_id}")
+            return True
             
         except Exception as e:
             logger.error(f"Error al eliminar archivo: {e}")
+            return False
+    
+    def mover_archivo(self, node_id: str, nueva_ruta: str) -> bool:
+        """Mueve un archivo a una nueva carpeta"""
+        try:
+            # Crear carpeta destino si no existe
+            self.crear_carpeta(nueva_ruta)
+            
+            # Encontrar la carpeta destino
+            carpetas = self.m.get_files()
+            carpeta_destino_id = None
+            
+            for file_id, file_info in carpetas.items():
+                if (file_info['a'] and 
+                    file_info['a'].get('n') == nueva_ruta.split('/')[-2] and 
+                    file_info['t'] == 1):
+                    carpeta_destino_id = file_id
+                    break
+            
+            if carpeta_destino_id:
+                # Mover archivo
+                self.m.move(node_id, carpeta_destino_id)
+                logger.info(f"Archivo movido a: {nueva_ruta}")
+                return True
+            else:
+                logger.error(f"No se pudo encontrar la carpeta destino: {nueva_ruta}")
+                return False
+            
+        except Exception as e:
+            logger.error(f"Error al mover archivo: {e}")
             return False
     
     def eliminar_carpeta_usuario(self, usuario_id: str) -> bool:

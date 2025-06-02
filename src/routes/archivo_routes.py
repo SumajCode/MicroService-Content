@@ -2,36 +2,61 @@ from flask import Blueprint
 from controllers.archivo_controller import ArchivoController
 
 # Crear blueprint para las rutas de archivos
-archivo_bp = Blueprint('archivos', __name__, url_prefix='/archivos')
+archivo_bp = Blueprint('archivos', __name__, url_prefix='/apicontenido')
 
 # Instanciar el controlador
 archivo_controller = ArchivoController()
 
-# Definir rutas
-@archivo_bp.route('/recursos/subir', methods=['POST'])
+# 1. Subir un archivo a una carpeta específica
+@archivo_bp.route('/apirecuros/subir', methods=['POST'])
 def subir_archivo():
-    """Ruta para subir archivos"""
+    """Subir un archivo a una carpeta específica"""
     return archivo_controller.subir_archivo()
 
-@archivo_bp.route('/recursos/<archivo_id>', methods=['PUT'])
-def reemplazar_archivo(archivo_id):
-    """Ruta para reemplazar un archivo existente"""
-    return archivo_controller.reemplazar_archivo(archivo_id)
+# 2. Subir múltiples archivos a una carpeta específica
+@archivo_bp.route('/apirecuros/subir-multiples', methods=['POST'])
+def subir_multiples_archivos():
+    """Subir múltiples archivos a una carpeta específica"""
+    return archivo_controller.subir_multiples_archivos()
 
-@archivo_bp.route('/recursos/<archivo_id>', methods=['DELETE'])
-def eliminar_archivo(archivo_id):
-    """Ruta para eliminar un archivo"""
-    return archivo_controller.eliminar_archivo(archivo_id)
+# 3. Obtener información de un archivo (devuelve el link)
+@archivo_bp.route('/apirecuros/info', methods=['POST'])
+def obtener_info_archivo():
+    """Obtener información de un archivo"""
+    return archivo_controller.obtener_info_archivo()
 
-@archivo_bp.route('/recursos/usuario/<usuario_id>', methods=['GET'])
-def obtener_archivos_usuario(usuario_id):
-    """Ruta para obtener todos los archivos de un usuario"""
-    return archivo_controller.obtener_archivos_usuario(usuario_id)
+# 4. Listar todos los archivos de un usuario por carpeta
+@archivo_bp.route('/apirecuros/listar', methods=['POST'])
+def listar_archivos_usuario_carpeta():
+    """Listar archivos de un usuario por carpeta"""
+    return archivo_controller.listar_archivos_usuario_carpeta()
 
-# Blueprint para rutas de usuarios
-usuario_bp = Blueprint('usuarios', __name__, url_prefix='/usuarios')
+# 5. Descargar un archivo
+@archivo_bp.route('/apirecuros/descargar', methods=['POST'])
+def descargar_archivo():
+    """Descargar un archivo específico"""
+    return archivo_controller.descargar_archivo()
 
-@usuario_bp.route('/recursos/<usuario_id>', methods=['DELETE'])
-def eliminar_usuario_completo(usuario_id):
-    """Ruta para eliminar todo el contenido de un usuario"""
-    return archivo_controller.eliminar_usuario_completo(usuario_id)
+# 6. Descargar todos los archivos de la carpeta de un usuario como .zip
+@archivo_bp.route('/apirecuros/descargar-carpeta', methods=['POST'])
+def descargar_carpeta_zip():
+    """Descargar carpeta completa como ZIP"""
+    return archivo_controller.descargar_carpeta_zip()
+
+# 7. Actualizar metadatos del archivo
+@archivo_bp.route('/apirecuros/actualizar', methods=['PUT'])
+def actualizar_metadatos():
+    """Actualizar metadatos de un archivo"""
+    return archivo_controller.actualizar_metadatos()
+
+# 8. Eliminar un archivo
+@archivo_bp.route('/apirecuros/eliminar', methods=['DELETE'])
+def eliminar_archivo():
+    """Eliminar un archivo específico"""
+    return archivo_controller.eliminar_archivo()
+
+# 9. Eliminar todos los archivos y la carpeta de un usuario
+@archivo_bp.route('/apirecuros/eliminar-usuario', methods=['DELETE'])
+def eliminar_usuario_completo():
+    """Eliminar todo el contenido de un usuario"""
+    return archivo_controller.eliminar_usuario_completo()

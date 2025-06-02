@@ -9,8 +9,11 @@ logger = logging.getLogger(__name__)
 class FileUtils:
     ALLOWED_EXTENSIONS = {
         'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 
-        'xls', 'xlsx', 'ppt', 'pptx', 'mp4', 'avi', 'mov', 'mp3', 'wav'
+        'xls', 'xlsx', 'ppt', 'pptx', 'mp4', 'avi', 'mov', 'mp3', 'wav',
+        'zip', 'rar', '7z', 'tar', 'gz'
     }
+    
+    CARPETAS_VALIDAS = ['Contenido Personal', 'Contenido Educativo']
     
     @staticmethod
     def archivo_permitido(filename: str) -> bool:
@@ -36,19 +39,19 @@ class FileUtils:
         }
     
     @staticmethod
-    def validar_tipo_contenido(tipo: str) -> bool:
-        """Valida que el tipo de contenido sea válido"""
-        return tipo in ['personal', 'educativo']
+    def validar_carpeta(carpeta: str) -> bool:
+        """Valida que la carpeta sea válida"""
+        return carpeta in FileUtils.CARPETAS_VALIDAS
     
     @staticmethod
-    def generar_ruta_mega(usuario_id: str, tipo_contenido: str) -> str:
+    def generar_ruta_mega(usuario_id: str, carpeta: str) -> str:
         """Genera la ruta de carpeta en MEGA"""
-        if tipo_contenido == 'personal':
+        if carpeta == 'Contenido Personal':
             return f"/Contenido Personal/{usuario_id}/"
-        elif tipo_contenido == 'educativo':
+        elif carpeta == 'Contenido Educativo':
             return f"/Contenido Educativo/{usuario_id}/"
         else:
-            raise ValueError(f"Tipo de contenido inválido: {tipo_contenido}")
+            raise ValueError(f"Carpeta inválida: {carpeta}")
     
     @staticmethod
     def guardar_archivo_temporal(archivo, upload_folder: str) -> str:

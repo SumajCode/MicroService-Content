@@ -1,5 +1,5 @@
 from flask import Flask, jsonify
-from routes.archivo_routes import archivo_bp, usuario_bp
+from routes.archivo_routes import archivo_bp
 from config.settings import Config
 import logging
 
@@ -19,45 +19,71 @@ def create_app():
     
     # Registrar blueprints
     app.register_blueprint(archivo_bp)
-    app.register_blueprint(usuario_bp)
     
     # Ruta de salud
     @app.route('/health', methods=['GET'])
     def health_check():
         return jsonify({
-            "status": "healthy",
-            "service": "MicroService-Content",
-            "version": "1.0.0"
+            "status": "success",
+            "code": 200,
+            "message": "Servicio funcionando correctamente",
+            "data": {
+                "service": "MicroService-Content",
+                "version": "1.0.0"
+            }
         }), 200
     
     # Ruta raíz
     @app.route('/', methods=['GET'])
     def home():
         return jsonify({
+            "status": "success",
+            "code": 200,
             "message": "MicroService-Content API",
-            "version": "1.0.0",
-            "endpoints": {
-                "subir_archivo": "POST /archivos/subir",
-                "reemplazar_archivo": "PUT /archivos/<archivo_id>",
-                "eliminar_archivo": "DELETE /archivos/<archivo_id>",
-                "obtener_archivos_usuario": "GET /archivos/usuario/<usuario_id>",
-                "eliminar_usuario_completo": "DELETE /usuarios/<usuario_id>",
-                "health_check": "GET /health"
+            "data": {
+                "version": "1.0.0",
+                "endpoints": {
+                    "subir_archivo": "POST /apicontenido/subir",
+                    "subir_multiples": "POST /apicontenido/subir-multiples",
+                    "obtener_info": "POST /apicontenido/info",
+                    "listar_archivos": "POST /apicontenido/listar",
+                    "descargar_archivo": "POST /apicontenido/descargar",
+                    "descargar_carpeta": "POST /apicontenido/descargar-carpeta",
+                    "actualizar_metadatos": "PUT /apicontenido/actualizar",
+                    "eliminar_archivo": "DELETE /apicontenido/eliminar",
+                    "eliminar_usuario": "DELETE /apicontenido/eliminar-usuario",
+                    "health_check": "GET /health"
+                }
             }
         }), 200
     
     # Manejo de errores
     @app.errorhandler(404)
     def not_found(error):
-        return jsonify({"error": "Endpoint no encontrado"}), 404
+        return jsonify({
+            "status": "error",
+            "code": 404,
+            "message": "Endpoint no encontrado",
+            "data": None
+        }), 404
     
     @app.errorhandler(413)
     def too_large(error):
-        return jsonify({"error": "Archivo demasiado grande"}), 413
+        return jsonify({
+            "status": "error",
+            "code": 413,
+            "message": "Archivo demasiado grande",
+            "data": None
+        }), 413
     
     @app.errorhandler(500)
     def internal_error(error):
-        return jsonify({"error": "Error interno del servidor"}), 500
+        return jsonify({
+            "status": "error",
+            "code": 500,
+            "message": "Error interno del servidor",
+            "data": None
+        }), 500
     
     return app
 
