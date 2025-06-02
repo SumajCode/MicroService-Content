@@ -95,9 +95,24 @@ class MegaService:
                             carpeta_id = file_id
                             break
             
+            # Validaciones previas antes de subir
+            if not carpeta_id:
+                logger.error(f"No se encontró carpeta destino válida para la ruta: {carpeta_destino}")
+                return None
+
+            if not os.path.exists(archivo_path):
+                logger.error(f"Archivo temporal no encontrado: {archivo_path}")
+                return None
+
+            # Logs informativos antes de subir
+            logger.info(f"Subiendo archivo a MEGA...")
+            logger.info(f"Ruta temporal del archivo: {archivo_path}")
+            logger.info(f"ID de carpeta destino en MEGA: {carpeta_id}")
+            logger.info(f"Nombre del archivo a subir: {nombre_archivo}")
+
             # Subir archivo
             file_handle = self.m.upload(archivo_path, carpeta_id, nombre_archivo)
-            
+
             # Obtener link público
             link = self.m.get_upload_link(file_handle)
             
