@@ -64,9 +64,15 @@ class ArchivoController:
             with tempfile.TemporaryDirectory() as temp_dir:
                 temp_path = FileUtils.guardar_archivo_temporal(archivo, temp_dir)
                 
+                # DEBUG: Verificar ruta temporal del archivo
+                print(f"Ruta temporal del archivo: {temp_path}")
+                
                 # Generar ruta en MEGA
                 ruta_mega = FileUtils.generar_ruta_mega(usuario_id, carpeta)
                 
+                # DEBUG: Verificar ruta generada para MEGA
+                print(f"Ruta en MEGA donde se subirá el archivo: {ruta_mega}")
+
                 # Subir a MEGA
                 resultado_mega = self.mega_service.subir_archivo(
                     temp_path, 
@@ -74,6 +80,9 @@ class ArchivoController:
                     archivo_info['nombre']
                 )
                 
+                # DEBUG: Verificar resultado de la subida a MEGA
+                print(f"Resultado de subida a MEGA: {resultado_mega}")
+
                 if not resultado_mega:
                     return self._response_format("error", 500, "Error al subir archivo a MEGA")
                 
