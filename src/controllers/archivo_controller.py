@@ -44,6 +44,8 @@ class ArchivoController:
             usuario_id = request.form.get('userId')
             carpeta = request.form.get('carpeta')  # "Contenido Personal" o "Contenido Educativo"
             
+            print(f"Valor recibido en 'carpeta': {carpeta}")
+
             if not usuario_id or not carpeta:
                 return self._response_format("error", 400, "userId y carpeta son requeridos")
             
