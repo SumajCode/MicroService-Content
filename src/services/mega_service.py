@@ -61,16 +61,39 @@ class MegaService:
             # Crear carpeta si no existe
             self.crear_carpeta(carpeta_destino)
             
-            # Encontrar la carpeta destino
+            # Encontrar la carpeta destino - CORREGIDO
             carpetas = self.m.get_files()
             carpeta_id = None
             
-            for file_id, file_info in carpetas.items():
-                if (file_info['a'] and 
-                    file_info['a'].get('n') == carpeta_destino.split('/')[-2] and 
-                    file_info['t'] == 1):
-                    carpeta_id = file_id
-                    break
+            # Dividir la ruta para encontrar la estructura completa
+            partes_ruta = [p for p in carpeta_destino.split('/') if p]
+            
+            # Buscar la carpeta siguiendo la estructura jerárquica
+            carpeta_actual = None
+            for i, parte in enumerate(partes_ruta):
+                for file_id, file_info in carpetas.items():
+                    if (file_info['a'] and 
+                        file_info['a'].get('n') == parte and 
+                        file_info['t'] == 1):  # t=1 indica carpeta
+                        # Verificar que esté en el nivel correcto de la jerarquía
+                        if (carpeta_actual is None and file_info.get('p') is None) or \
+                           (carpeta_actual is not None and file_info.get('p') == carpeta_actual):
+                            carpeta_actual = file_id
+                            if i == len(partes_ruta) - 1:  # Es la última carpeta
+                                carpeta_id = file_id
+                            break
+            
+            # Si no se encontró la carpeta, usar la última carpeta creada
+            if carpeta_id is None:
+                # Buscar la carpeta del usuario (última parte de la ruta)
+                usuario_id = partes_ruta[-1] if partes_ruta else None
+                if usuario_id:
+                    for file_id, file_info in carpetas.items():
+                        if (file_info['a'] and 
+                            file_info['a'].get('n') == usuario_id and 
+                            file_info['t'] == 1):
+                            carpeta_id = file_id
+                            break
             
             # Subir archivo
             file_handle = self.m.upload(archivo_path, carpeta_id, nombre_archivo)
@@ -78,7 +101,7 @@ class MegaService:
             # Obtener link público
             link = self.m.get_upload_link(file_handle)
             
-            logger.info(f"Archivo subido exitosamente: {nombre_archivo}")
+            logger.info(f"Archivo subido exitosamente: {nombre_archivo} en carpeta: {carpeta_destino}")
             return {
                 "link": link,
                 "node_id": file_handle
@@ -121,16 +144,26 @@ class MegaService:
             # Crear carpeta destino si no existe
             self.crear_carpeta(nueva_ruta)
             
-            # Encontrar la carpeta destino
+            # Encontrar la carpeta destino - CORREGIDO
             carpetas = self.m.get_files()
             carpeta_destino_id = None
             
-            for file_id, file_info in carpetas.items():
-                if (file_info['a'] and 
-                    file_info['a'].get('n') == nueva_ruta.split('/')[-2] and 
-                    file_info['t'] == 1):
-                    carpeta_destino_id = file_id
-                    break
+            # Dividir la ruta para encontrar la estructura completa
+            partes_ruta = [p for p in nueva_ruta.split('/') if p]
+            
+            # Buscar la carpeta siguiendo la estructura jerárquica
+            carpeta_actual = None
+            for i, parte in enumerate(partes_ruta):
+                for file_id, file_info in carpetas.items():
+                    if (file_info['a'] and 
+                        file_info['a'].get('n') == parte and 
+                        file_info['t'] == 1):
+                        if (carpeta_actual is None and file_info.get('p') is None) or \
+                           (carpeta_actual is not None and file_info.get('p') == carpeta_actual):
+                            carpeta_actual = file_id
+                            if i == len(partes_ruta) - 1:
+                                carpeta_destino_id = file_id
+                            break
             
             if carpeta_destino_id:
                 # Mover archivo
