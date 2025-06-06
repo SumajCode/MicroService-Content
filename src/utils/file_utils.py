@@ -1,5 +1,6 @@
 import os
 import mimetypes
+import uuid
 from werkzeug.utils import secure_filename
 from typing import Dict, Optional
 import logging
@@ -74,3 +75,23 @@ class FileUtils:
                 logger.info(f"Archivo temporal eliminado: {filepath}")
         except Exception as e:
             logger.error(f"Error al eliminar archivo temporal: {e}")
+    
+    @staticmethod
+    def generar_nombre_unico(nombre_original: str) -> str:
+        """Genera un nombre único para el archivo usando UUID"""
+        extension = nombre_original.rsplit('.', 1)[1].lower() if '.' in nombre_original else ''
+        nombre_base = nombre_original.rsplit('.', 1)[0] if '.' in nombre_original else nombre_original
+        
+        # Generar UUID y truncar nombre base si es muy largo
+        uuid_str = str(uuid.uuid4())
+        nombre_base = nombre_base[:50] if len(nombre_base) > 50 else nombre_base
+        
+        if extension:
+            return f"{nombre_base}_{uuid_str}.{extension}"
+        else:
+            return f"{nombre_base}_{uuid_str}"
+    
+    @staticmethod
+    def generar_ruta_archivo_educativo(modulo: str, referencia_id: str) -> str:
+        """Genera la ruta para archivos educativos en MEGA"""
+        return f"/Archivo/{modulo}/{referencia_id}/"
