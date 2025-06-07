@@ -25,8 +25,8 @@ def actualizar_entrega():
     """Actualizar una entrega existente"""
     return entrega_controller.actualizar_entrega()
 
-# Subir archivo para entrega
+# Subir archivos para entrega
 @entrega_bp.route('/upload', methods=['POST'])
 def subir_archivo_entrega():
-    """Subir archivo para una entrega"""
+    """Subir archivos para una entrega"""
     return entrega_controller.subir_archivo_entrega()

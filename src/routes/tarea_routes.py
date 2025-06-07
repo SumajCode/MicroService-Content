@@ -31,8 +31,8 @@ def eliminar_tarea():
     """Eliminar una tarea"""
     return tarea_controller.eliminar_tarea()
 
-# Subir archivo para tarea
+# Subir archivos para tarea
 @tarea_bp.route('/upload', methods=['POST'])
 def subir_archivo_tarea():
-    """Subir archivo para una tarea"""
+    """Subir archivos para una tarea"""
     return tarea_controller.subir_archivo_tarea()

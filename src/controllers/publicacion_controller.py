@@ -160,15 +160,15 @@ class PublicacionController:
             return self._response_format("error", 500, "Error interno del servidor")
     
     def subir_archivo_publicacion(self):
-        """Subir archivo para una publicación"""
+        """Subir múltiples archivos para una publicación"""
         try:
-            # Validar que se envió un archivo
-            if 'archivo' not in request.files:
-                return self._response_format("error", 400, "No se envió ningún archivo")
+            # Validar que se enviaron archivos
+            if 'archivos' not in request.files:
+                return self._response_format("error", 400, "No se enviaron archivos")
             
-            archivo = request.files['archivo']
-            if archivo.filename == '':
-                return self._response_format("error", 400, "No se seleccionó ningún archivo")
+            archivos = request.files.getlist('archivos')
+            if not archivos or all(archivo.filename == '' for archivo in archivos):
+                return self._response_format("error", 400, "No se seleccionaron archivos")
             
             # Obtener datos del formulario
             publicacion_id = request.form.get('publicacion_id')  # ID de la publicación
@@ -177,58 +177,88 @@ class PublicacionController:
             if not publicacion_id or not autor_id:
                 return self._response_format("error", 400, "publicacion_id y autor_id son requeridos")
             
-            # Validaciones
-            if not FileUtils.archivo_permitido(archivo.filename):
-                return self._response_format("error", 400, "Tipo de archivo no permitido")
+            archivos_subidos = []
+            errores = []
             
-            # Obtener información del archivo
-            archivo_info = FileUtils.obtener_info_archivo(archivo)
+            # Crear carpeta en MEGA si no existe
+            ruta_mega = f"/Archivo/publicacion/{publicacion_id}/"
             
-            # Generar nombre único
-            nombre_unico = f"{uuid.uuid4()}_{archivo_info['nombre']}"
+            for archivo in archivos:
+                try:
+                    if archivo.filename == '':
+                        continue
+                        
+                    # Validaciones
+                    if not FileUtils.archivo_permitido(archivo.filename):
+                        errores.append(f"Archivo {archivo.filename}: tipo no permitido")
+                        continue
+                    
+                    # Obtener información del archivo
+                    archivo_info = FileUtils.obtener_info_archivo(archivo)
+                    
+                    # Generar nombre único
+                    nombre_unico = f"{uuid.uuid4()}_{archivo_info['nombre']}"
+                    
+                    # Guardar archivo temporalmente
+                    with tempfile.TemporaryDirectory() as temp_dir:
+                        temp_path = FileUtils.guardar_archivo_temporal(archivo, temp_dir)
+                        
+                        # Subir a MEGA
+                        resultado_mega = self.mega_service.subir_archivo(
+                            temp_path, 
+                            ruta_mega, 
+                            nombre_unico
+                        )
+                        
+                        if not resultado_mega:
+                            errores.append(f"Error al subir {archivo.filename} a MEGA")
+                            continue
+                        
+                        # Crear documento de archivo
+                        documento_archivo = {
+                            "usuario_id": autor_id,
+                            "tipo_usuario": "docente",
+                            "nombre_original": archivo.filename,
+                            "nombre_almacenado": nombre_unico,
+                            "url": resultado_mega['link'],
+                            "tipo": archivo_info['mime'],
+                            "peso": archivo_info['peso_bytes'],
+                            "modulo_origen": "publicacion",
+                            "referencia_id": publicacion_id,
+                            "fecha_subida": datetime.utcnow()
+                        }
+                        
+                        # Guardar en MongoDB
+                        archivo_id = self.educativo_service.insertar_archivo_educativo(documento_archivo)
+                        
+                        archivos_subidos.append({
+                            "archivo_id": archivo_id,
+                            "nombre_original": archivo.filename,
+                            "nombre_almacenado": nombre_unico,
+                            "url": resultado_mega['link'],
+                            "tipo": archivo_info['mime'],
+                            "peso": archivo_info['peso_bytes']
+                        })
+                        
+                except Exception as e:
+                    errores.append(f"Error al procesar {archivo.filename}: {str(e)}")
             
-            # Guardar archivo temporalmente
-            with tempfile.TemporaryDirectory() as temp_dir:
-                temp_path = FileUtils.guardar_archivo_temporal(archivo, temp_dir)
+            if archivos_subidos:
+                message = f"Se subieron {len(archivos_subidos)} archivos exitosamente"
+                if errores:
+                    message += f". {len(errores)} archivos fallaron"
                 
-                # Subir a MEGA en la carpeta "Archivo/publicacion/"
-                ruta_mega = f"/Archivo/publicacion/{publicacion_id}/"
-                resultado_mega = self.mega_service.subir_archivo(
-                    temp_path, 
-                    ruta_mega, 
-                    nombre_unico
-                )
-                
-                if not resultado_mega:
-                    return self._response_format("error", 500, "Error al subir archivo a MEGA")
-                
-                # Crear documento de archivo
-                documento_archivo = {
-                    "usuario_id": autor_id,
-                    "tipo_usuario": "docente",
-                    "nombre_original": archivo.filename,
-                    "nombre_almacenado": nombre_unico,
-                    "url": resultado_mega['link'],
-                    "tipo": archivo_info['mime'],
-                    "peso": archivo_info['peso_bytes'],
-                    "modulo_origen": "publicacion",
-                    "referencia_id": publicacion_id,
-                    "fecha_subida": datetime.utcnow()
-                }
-                
-                # Guardar en MongoDB
-                archivo_id = self.educativo_service.insertar_archivo_educativo(documento_archivo)
-                
-                return self._response_format("success", 201, "Archivo subido exitosamente", {
-                    "archivo_id": archivo_id,
+                return self._response_format("success", 201, message, {
                     "publicacion_id": publicacion_id,
-                    "nombre_original": archivo.filename,
-                    "nombre_almacenado": nombre_unico,
-                    "url": resultado_mega['link'],
-                    "tipo": archivo_info['mime'],
-                    "peso": archivo_info['peso_bytes']
+                    "autor_id": autor_id,
+                    "archivos": archivos_subidos,
+                    "errores": errores if errores else None
+                })
+            else:
+                return self._response_format("error", 400, "No se pudo subir ningún archivo", {
+                    "errores": errores
                 })
                 
         except Exception as e:
-            logger.error(f"Error al subir archivo de publicación: {e}")
+            logger.error(f"Error al subir archivos de publicación: {e}")
             return self._response_format("error", 500, "Error interno del servidor")

@@ -31,8 +31,8 @@ def eliminar_publicacion():
     """Eliminar una publicación"""
     return publicacion_controller.eliminar_publicacion()
 
-# Subir archivo para publicación
+# Subir archivos para publicación
 @publicacion_bp.route('/upload', methods=['POST'])
 def subir_archivo_publicacion():
-    """Subir archivo para una publicación"""
+    """Subir archivos para una publicación"""
     return publicacion_controller.subir_archivo_publicacion()

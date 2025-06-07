@@ -31,8 +31,8 @@ def eliminar_anuncio():
     """Eliminar un anuncio"""
     return anuncio_controller.eliminar_anuncio()
 
-# Subir archivo para anuncio
+# Subir archivos para anuncio
 @anuncio_bp.route('/upload', methods=['POST'])
 def subir_archivo_anuncio():
-    """Subir archivo para un anuncio"""
+    """Subir archivos para un anuncio"""
     return anuncio_controller.subir_archivo_anuncio()
