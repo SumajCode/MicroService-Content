@@ -47,6 +47,7 @@ class PublicacionController:
                     "id_tema": pub['id_tema'],
                     "titulo": pub['titulo'],
                     "contenido": pub['contenido'],
+                    "autor_id": pub.get('autor_id', ''),
                     "archivos": pub.get('archivos', []),
                     "fecha_creacion": pub['fecha_creacion'].isoformat()
                 })
@@ -78,6 +79,7 @@ class PublicacionController:
                 id_tema=data['id_tema'],
                 titulo=data['titulo'],
                 contenido=data['contenido'],
+                autor_id=data['autor_id'],
                 archivos=data.get('archivos', [])
             )
             
@@ -169,12 +171,11 @@ class PublicacionController:
                 return self._response_format("error", 400, "No se seleccionó ningún archivo")
             
             # Obtener datos del formulario
-            id_tema = request.form.get('id_tema')
-            usuario_id = request.form.get('usuario_id')
-            tipo_usuario = request.form.get('tipo_usuario', 'docente')
+            publicacion_id = request.form.get('publicacion_id')  # ID de la publicación
+            autor_id = request.form.get('autor_id')  # ID del docente que sube el archivo
             
-            if not id_tema or not usuario_id:
-                return self._response_format("error", 400, "id_tema y usuario_id son requeridos")
+            if not publicacion_id or not autor_id:
+                return self._response_format("error", 400, "publicacion_id y autor_id son requeridos")
             
             # Validaciones
             if not FileUtils.archivo_permitido(archivo.filename):
@@ -190,10 +191,11 @@ class PublicacionController:
             with tempfile.TemporaryDirectory() as temp_dir:
                 temp_path = FileUtils.guardar_archivo_temporal(archivo, temp_dir)
                 
-                # Subir a MEGA en la carpeta "Archivo"
+                # Subir a MEGA en la carpeta "Archivo/publicacion/"
+                ruta_mega = f"/Archivo/publicacion/{publicacion_id}/"
                 resultado_mega = self.mega_service.subir_archivo(
                     temp_path, 
-                    "/Archivo/", 
+                    ruta_mega, 
                     nombre_unico
                 )
                 
@@ -202,15 +204,15 @@ class PublicacionController:
                 
                 # Crear documento de archivo
                 documento_archivo = {
-                    "usuario_id": usuario_id,
-                    "tipo_usuario": tipo_usuario,
+                    "usuario_id": autor_id,
+                    "tipo_usuario": "docente",
                     "nombre_original": archivo.filename,
                     "nombre_almacenado": nombre_unico,
                     "url": resultado_mega['link'],
                     "tipo": archivo_info['mime'],
                     "peso": archivo_info['peso_bytes'],
                     "modulo_origen": "publicacion",
-                    "referencia_id": id_tema,
+                    "referencia_id": publicacion_id,
                     "fecha_subida": datetime.utcnow()
                 }
                 
@@ -219,6 +221,7 @@ class PublicacionController:
                 
                 return self._response_format("success", 201, "Archivo subido exitosamente", {
                     "archivo_id": archivo_id,
+                    "publicacion_id": publicacion_id,
                     "nombre_original": archivo.filename,
                     "nombre_almacenado": nombre_unico,
                     "url": resultado_mega['link'],

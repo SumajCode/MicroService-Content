@@ -12,6 +12,7 @@ class TareaModel:
         titulo: str,
         descripcion: str,
         fecha_entrega: str,
+        autor_id: str,  # ID del docente que crea la tarea
         archivos: List[Dict] = None
     ) -> Dict:
         """Crea un documento para insertar en MongoDB"""
@@ -20,6 +21,7 @@ class TareaModel:
             "titulo": titulo,
             "descripcion": descripcion,
             "fecha_entrega": fecha_entrega,
+            "autor_id": autor_id,  # Agregamos el autor de la tarea
             "archivos": archivos or [],
             "fecha_creacion": datetime.utcnow(),
             "estado": "activo"
@@ -36,4 +38,6 @@ class TareaModel:
             return False, "descripcion es requerida"
         if not data.get('fecha_entrega'):
             return False, "fecha_entrega es requerida"
+        if not data.get('autor_id'):
+            return False, "autor_id es requerido"
         return True, ""

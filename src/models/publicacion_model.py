@@ -11,6 +11,7 @@ class PublicacionModel:
         id_tema: str,
         titulo: str,
         contenido: str,
+        autor_id: str,  # ID del docente que crea la publicación
         archivos: List[Dict] = None
     ) -> Dict:
         """Crea un documento para insertar en MongoDB"""
@@ -18,6 +19,7 @@ class PublicacionModel:
             "id_tema": id_tema,
             "titulo": titulo,
             "contenido": contenido,
+            "autor_id": autor_id,  # Agregamos el autor de la publicación
             "archivos": archivos or [],
             "fecha_creacion": datetime.utcnow(),
             "estado": "activo"
@@ -32,4 +34,6 @@ class PublicacionModel:
             return False, "titulo es requerido"
         if not data.get('contenido'):
             return False, "contenido es requerido"
+        if not data.get('autor_id'):
+            return False, "autor_id es requerido"
         return True, ""
