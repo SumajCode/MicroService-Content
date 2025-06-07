@@ -1,9 +1,9 @@
 from flask import request, jsonify
-from services.educativo_service import EducativoService
-from services.mega_service import MegaService
-from models.anuncio_model import AnuncioModel
-from utils.file_utils import FileUtils
-from config.settings import Config
+from src.services.educativo_service import EducativoService
+from src.services.mega_service import MegaService
+from src.models.anuncio_model import AnuncioModel
+from src.utils.file_utils import FileUtils
+from src.config.settings import Config
 import logging
 import tempfile
 import uuid

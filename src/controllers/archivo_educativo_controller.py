@@ -1,6 +1,6 @@
 from flask import request, jsonify
-from services.educativo_service import EducativoService
-from config.settings import Config
+from src.services.educativo_service import EducativoService
+from src.config.settings import Config
 import logging
 
 logger = logging.getLogger(__name__)

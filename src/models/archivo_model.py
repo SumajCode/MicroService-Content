@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Dict, List, Optional
-from bson import Object
+from bson import ObjectId
 
 class ArchivoModel:
     def __init__(self):

@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers.tarea_controller import TareaController
+from src.controllers.tarea_controller import TareaController
 
 # Crear blueprint para las rutas de tareas
 tarea_bp = Blueprint('tareas', __name__, url_prefix='/tareas')

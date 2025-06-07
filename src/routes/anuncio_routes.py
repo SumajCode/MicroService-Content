@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers.anuncio_controller import AnuncioController
+from src.controllers.anuncio_controller import AnuncioController
 
 # Crear blueprint para las rutas de anuncios
 anuncio_bp = Blueprint('anuncios', __name__, url_prefix='/anuncios')

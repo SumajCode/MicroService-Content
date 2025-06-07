@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers.publicacion_controller import PublicacionController
+from src.controllers.publicacion_controller import PublicacionController
 
 # Crear blueprint para las rutas de publicaciones
 publicacion_bp = Blueprint('publicaciones', __name__, url_prefix='/publicaciones')

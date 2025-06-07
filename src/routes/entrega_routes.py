@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers.entrega_controller import EntregaController
+from src.controllers.entrega_controller import EntregaController
 
 # Crear blueprint para las rutas de entregas
 entrega_bp = Blueprint('entregas', __name__, url_prefix='/entregas')

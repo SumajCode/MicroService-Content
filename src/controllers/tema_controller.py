@@ -1,7 +1,7 @@
 from flask import request, jsonify
-from services.educativo_service import EducativoService
-from models.tema_model import TemaModel
-from config.settings import Config
+from src.services.educativo_service import EducativoService
+from src.models.tema_model import TemaModel
+from src.config.settings import Config
 import logging
 
 logger = logging.getLogger(__name__)

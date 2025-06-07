@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers.archivo_educativo_controller import ArchivoEducativoController
+from src.controllers.archivo_educativo_controller import ArchivoEducativoController
 
 # Crear blueprint para las rutas de archivos educativos
 archivo_educativo_bp = Blueprint('archivos_educativos', __name__, url_prefix='/archivos')

@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers.tema_controller import TemaController
+from src.controllers.tema_controller import TemaController
 
 # Crear blueprint para las rutas de temas
 tema_bp = Blueprint('temas', __name__, url_prefix='/temas')

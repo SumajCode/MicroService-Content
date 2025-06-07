@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers.archivo_controller import ArchivoController
+from src.controllers.archivo_controller import ArchivoController
 
 # Crear blueprint para las rutas de archivos
 archivo_bp = Blueprint('archivos', __name__, url_prefix='/apicontenido')
