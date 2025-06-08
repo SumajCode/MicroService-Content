@@ -13,6 +13,7 @@ import zipfile
 from io import BytesIO
 from datetime import datetime
 import uuid
+from bson import ObjectId
 
 logger = logging.getLogger(__name__)
 
@@ -474,7 +475,7 @@ class ArchivoController:
             if archivos_subidos:
                 try:
                     # Obtener publicación actual
-                    publicacion = self.educativo_service.publicaciones_collection.find_one({"_id": publicacion_id})
+                    publicacion = self.educativo_service.publicaciones_collection.find_one({"_id": ObjectId(publicacion_id)})
                     if publicacion:
                         archivos_actuales = publicacion.get('archivos', [])
                         archivos_actuales.extend(archivos_subidos)
@@ -483,6 +484,9 @@ class ArchivoController:
                         self.educativo_service.actualizar_publicacion(publicacion_id, {
                             'archivos': archivos_actuales
                         })
+                        logger.info(f"Campo archivos actualizado en publicación {publicacion_id}")
+                    else:
+                        logger.error(f"Publicación {publicacion_id} no encontrada")
                 except Exception as e:
                     logger.error(f"Error al actualizar campo archivos en publicación: {e}")
             
@@ -597,7 +601,7 @@ class ArchivoController:
             if archivos_subidos:
                 try:
                     # Obtener tarea actual
-                    tarea = self.educativo_service.tareas_collection.find_one({"_id": tarea_id})
+                    tarea = self.educativo_service.tareas_collection.find_one({"_id": ObjectId(tarea_id)})
                     if tarea:
                         archivos_actuales = tarea.get('archivos', [])
                         archivos_actuales.extend(archivos_subidos)
@@ -606,6 +610,9 @@ class ArchivoController:
                         self.educativo_service.actualizar_tarea(tarea_id, {
                             'archivos': archivos_actuales
                         })
+                        logger.info(f"Campo archivos actualizado en tarea {tarea_id}")
+                    else:
+                        logger.error(f"Tarea {tarea_id} no encontrada")
                 except Exception as e:
                     logger.error(f"Error al actualizar campo archivos en tarea: {e}")
             
@@ -729,6 +736,9 @@ class ArchivoController:
                         self.educativo_service.actualizar_entrega(str(entrega['_id']), {
                             'archivos': archivos_actuales
                         })
+                        logger.info(f"Campo archivos actualizado en entrega {entrega['_id']}")
+                    else:
+                        logger.warning(f"No se encontró entrega para tarea {id_tarea} y estudiante {id_estudiante}")
                 except Exception as e:
                     logger.error(f"Error al actualizar campo archivos en entrega: {e}")
             
@@ -844,7 +854,7 @@ class ArchivoController:
             if archivos_subidos:
                 try:
                     # Obtener anuncio actual
-                    anuncio = self.educativo_service.anuncios_collection.find_one({"_id": anuncio_id})
+                    anuncio = self.educativo_service.anuncios_collection.find_one({"_id": ObjectId(anuncio_id)})
                     if anuncio:
                         archivos_actuales = anuncio.get('archivos', [])
                         archivos_actuales.extend(archivos_subidos)
@@ -853,6 +863,9 @@ class ArchivoController:
                         self.educativo_service.actualizar_anuncio(anuncio_id, {
                             'archivos': archivos_actuales
                         })
+                        logger.info(f"Campo archivos actualizado en anuncio {anuncio_id}")
+                    else:
+                        logger.error(f"Anuncio {anuncio_id} no encontrado")
                 except Exception as e:
                     logger.error(f"Error al actualizar campo archivos en anuncio: {e}")
             
@@ -974,7 +987,7 @@ class ArchivoController:
                 return self._response_format("error", 400, "_id es requerido")
             
             # Obtener archivo de la base de datos
-            archivo = self.educativo_service.archivos_collection.find_one({"_id": archivo_id})
+            archivo = self.educativo_service.archivos_collection.find_one({"_id": ObjectId(archivo_id)})
             if not archivo:
                 return self._response_format("error", 404, "Archivo no encontrado")
             
@@ -996,17 +1009,17 @@ class ArchivoController:
                     if modulo and referencia_id:
                         # Obtener documento del módulo
                         if modulo == 'publicacion':
-                            doc = self.educativo_service.publicaciones_collection.find_one({"_id": referencia_id})
+                            doc = self.educativo_service.publicaciones_collection.find_one({"_id": ObjectId(referencia_id)})
                             if doc:
                                 archivos_actuales = [a for a in doc.get('archivos', []) if a.get('archivo_id') != archivo_id]
                                 self.educativo_service.actualizar_publicacion(referencia_id, {'archivos': archivos_actuales})
                         elif modulo == 'tarea':
-                            doc = self.educativo_service.tareas_collection.find_one({"_id": referencia_id})
+                            doc = self.educativo_service.tareas_collection.find_one({"_id": ObjectId(referencia_id)})
                             if doc:
                                 archivos_actuales = [a for a in doc.get('archivos', []) if a.get('archivo_id') != archivo_id]
                                 self.educativo_service.actualizar_tarea(referencia_id, {'archivos': archivos_actuales})
                         elif modulo == 'anuncio':
-                            doc = self.educativo_service.anuncios_collection.find_one({"_id": referencia_id})
+                            doc = self.educativo_service.anuncios_collection.find_one({"_id": ObjectId(referencia_id)})
                             if doc:
                                 archivos_actuales = [a for a in doc.get('archivos', []) if a.get('archivo_id') != archivo_id]
                                 self.educativo_service.actualizar_anuncio(referencia_id, {'archivos': archivos_actuales})
