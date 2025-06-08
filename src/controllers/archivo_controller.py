@@ -1028,12 +1028,13 @@ class ArchivoController:
             if not archivo_id:
                 logger.warning("No se proporcionó _id del archivo")
                 return self._response_format("error", 400, "_id es requerido")
-            
-            logger.info(f"Archivo encontrado: {archivo}")
 
             # Obtener archivo de la base de datos
             archivo = self.educativo_service.archivos_collection.find_one({"_id": ObjectId(archivo_id)})
+            logger.info(f"Archivo encontrado: {archivo}")
+
             if not archivo:
+                logger.warning("No se proporcionó _id del archivo")
                 return self._response_format("error", 404, "Archivo no encontrado")
             
             # Eliminar de MEGA si tiene mega_node_id
