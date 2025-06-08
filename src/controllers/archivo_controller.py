@@ -1013,56 +1013,86 @@ class ArchivoController:
     def eliminar_archivo_educativo(self):
         """13. Eliminar archivo educativo"""
         try:
+            logger.info("Iniciando eliminación de archivo educativo")
+
             data = request.get_json()
+            logger.debug(f"Datos recibidos: {data}")
+
             if not data:
+                logger.warning("No se proporcionaron datos JSON")
                 return self._response_format("error", 400, "Datos JSON requeridos")
             
             archivo_id = data.get('_id')
+            logger.info(f"Buscando archivo con ID: {archivo_id}")
+
             if not archivo_id:
+                logger.warning("No se proporcionó _id del archivo")
                 return self._response_format("error", 400, "_id es requerido")
             
+            logger.info(f"Archivo encontrado: {archivo}")
+
             # Obtener archivo de la base de datos
             archivo = self.educativo_service.archivos_collection.find_one({"_id": ObjectId(archivo_id)})
             if not archivo:
                 return self._response_format("error", 404, "Archivo no encontrado")
             
             # Eliminar de MEGA si tiene mega_node_id
-            if archivo.get('mega_node_id'):
-                mega_eliminado = self.mega_service.eliminar_archivo(archivo['mega_node_id'])
-                if not mega_eliminado:
-                    logger.warning(f"No se pudo eliminar archivo de MEGA: {archivo['mega_node_id']}")
+            mega_node_data = archivo.get('mega_node_id')
+            node_id = None
+            if isinstance(mega_node_data, str):
+                node_id = mega_node_data
+            elif isinstance(mega_node_data, dict):
+                node_id = mega_node_data.get('f', [{}])[0].get('h')
+
+            if node_id:
+                logger.info(f"Intentando eliminar archivo en MEGA con node_id: {node_id}")
+                mega_eliminado = self.mega_service.eliminar_archivo(node_id)
+                if mega_eliminado:
+                    logger.info("Archivo eliminado de MEGA correctamente")
+                else:
+                    logger.warning(f"No se pudo eliminar archivo de MEGA con node_id: {node_id}")
+            else:
+                logger.warning("mega_node_id no válido o ausente, omitiendo eliminación de MEGA")
             
             # Eliminar de MongoDB
+            logger.info("Eliminando archivo de la base de datos educativa")
             eliminado = self.educativo_service.eliminar_archivo_educativo(archivo_id)
             
             if eliminado:
+                logger.info("Archivo eliminado de MongoDB correctamente")
                 # Actualizar el campo archivos en la colección correspondiente
                 try:
                     modulo = archivo.get('modulo_origen')
                     referencia_id = archivo.get('referencia_id')
+                    logger.debug(f"Modulo origen: {modulo}, referencia ID: {referencia_id}")
                     
                     if modulo and referencia_id:
                         # Obtener documento del módulo
+                        logger.info(f"Actualizando documento del módulo {modulo} para referencia {referencia_id}")
                         if modulo == 'publicacion':
                             doc = self.educativo_service.publicaciones_collection.find_one({"_id": ObjectId(referencia_id)})
                             if doc:
                                 archivos_actuales = [a for a in doc.get('archivos', []) if a.get('archivo_id') != archivo_id]
                                 self.educativo_service.actualizar_publicacion(referencia_id, {'archivos': archivos_actuales})
+                                logger.info("Publicación actualizada correctamente")
                         elif modulo == 'tarea':
                             doc = self.educativo_service.tareas_collection.find_one({"_id": ObjectId(referencia_id)})
                             if doc:
                                 archivos_actuales = [a for a in doc.get('archivos', []) if a.get('archivo_id') != archivo_id]
                                 self.educativo_service.actualizar_tarea(referencia_id, {'archivos': archivos_actuales})
+                                logger.info("Tarea actualizada correctamente")
                         elif modulo == 'anuncio':
                             doc = self.educativo_service.anuncios_collection.find_one({"_id": ObjectId(referencia_id)})
                             if doc:
                                 archivos_actuales = [a for a in doc.get('archivos', []) if a.get('archivo_id') != archivo_id]
                                 self.educativo_service.actualizar_anuncio(referencia_id, {'archivos': archivos_actuales})
+                                logger.info("Anuncio actualizado correctamente")
                         elif modulo == 'entrega':
                             entrega = self.educativo_service.obtener_entrega_estudiante(referencia_id, archivo['usuario_id'])
                             if entrega:
                                 archivos_actuales = [a for a in entrega.get('archivos', []) if a.get('archivo_id') != archivo_id]
                                 self.educativo_service.actualizar_entrega(str(entrega['_id']), {'archivos': archivos_actuales})
+                                logger.info("Entrega actualizada correctamente")
                 except Exception as e:
                     logger.error(f"Error al actualizar campo archivos después de eliminar: {e}")
                 
@@ -1070,6 +1100,7 @@ class ArchivoController:
                     "archivo_id": archivo_id
                 })
             else:
+                logger.warning(f"No se pudo eliminar el archivo con ID {archivo_id} en la base de datos")
                 return self._response_format("error", 404, "Archivo no encontrado o no se pudo eliminar")
                 
         except Exception as e:
