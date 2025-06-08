@@ -88,7 +88,7 @@ class ArchivoController:
                 archivo_info.update({
                     "link": resultado_mega['link'],
                     "ruta": ruta_mega + archivo_info['nombre'],
-                    "mega_node_id": str(resultado_mega['node_id'])
+                    "mega_node_id": resultado_mega['node_id']
                 })
                 
                 # Crear documento para MongoDB
@@ -178,7 +178,7 @@ class ArchivoController:
                         archivo_info.update({
                             "link": resultado_mega['link'],
                             "ruta": ruta_mega + archivo_info['nombre'],
-                            "mega_node_id": str(resultado_mega['node_id'])
+                            "mega_node_id": resultado_mega['node_id']
                         })
                         
                         # Crear documento para MongoDB
@@ -461,7 +461,7 @@ class ArchivoController:
                             "peso": archivo_info['peso_bytes'],
                             "modulo_origen": "publicacion",
                             "referencia_id": publicacion_id,
-                            "mega_node_id": str(resultado_mega['node_id']),
+                            "mega_node_id": resultado_mega['node_id'],
                             "fecha_subida": datetime.utcnow()
                         }
                         
@@ -587,7 +587,7 @@ class ArchivoController:
                             "peso": archivo_info['peso_bytes'],
                             "modulo_origen": "tarea",
                             "referencia_id": tarea_id,
-                            "mega_node_id": str(resultado_mega['node_id']),
+                            "mega_node_id": resultado_mega['node_id'],
                             "fecha_subida": datetime.utcnow()
                         }
                         
@@ -713,7 +713,7 @@ class ArchivoController:
                             "peso": archivo_info['peso_bytes'],
                             "modulo_origen": "entrega",
                             "referencia_id": id_tarea,
-                            "mega_node_id": str(resultado_mega['node_id']),
+                            "mega_node_id": resultado_mega['node_id'],
                             "fecha_subida": datetime.utcnow()
                         }
                         
@@ -840,7 +840,7 @@ class ArchivoController:
                             "peso": archivo_info['peso_bytes'],
                             "modulo_origen": "anuncio",
                             "referencia_id": anuncio_id,
-                            "mega_node_id": str(resultado_mega['node_id']),
+                            "mega_node_id": resultado_mega['node_id'],
                             "fecha_subida": datetime.utcnow()
                         }
                         
