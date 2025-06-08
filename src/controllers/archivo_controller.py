@@ -179,6 +179,12 @@ class ArchivoController:
                         # Generar ruta en MEGA
                         ruta_mega = FileUtils.generar_ruta_mega(usuario_id, carpeta)
                         logger.info(f"Ruta MEGA generada: {ruta_mega}")
+
+                        # Crear carpeta si no existe
+                        if not self.mega_service.crear_carpeta(ruta_mega):
+                            logger.error(f"No se pudo crear la carpeta en MEGA: {ruta_mega}")
+                            errores.append(f"Error al crear la carpeta {ruta_mega}")
+                            continue
                         
                         # Subir a MEGA
                         logger.info("Intentando subir archivo a MEGA...")
