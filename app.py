@@ -1,12 +1,12 @@
 from flask import Flask, jsonify
-from src.routes.archivo_routes import archivo_bp
-from src.routes.tema_routes import tema_bp
-from src.routes.publicacion_routes import publicacion_bp
-from src.routes.tarea_routes import tarea_bp
-from src.routes.entrega_routes import entrega_bp
-from src.routes.anuncio_routes import anuncio_bp
-from src.routes.archivo_educativo_routes import archivo_educativo_bp
-from src.config.settings import Config
+from routes.archivo_routes import archivo_bp
+from routes.tema_routes import tema_bp
+from routes.publicacion_routes import publicacion_bp
+from routes.tarea_routes import tarea_bp
+from routes.entrega_routes import entrega_bp
+from routes.anuncio_routes import anuncio_bp
+from routes.archivo_educativo_routes import archivo_educativo_bp
+from config.settings import Config
 import logging
 from flask_cors import CORS
 
