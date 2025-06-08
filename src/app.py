@@ -5,7 +5,6 @@ from src.routes.publicacion_routes import publicacion_bp
 from src.routes.tarea_routes import tarea_bp
 from src.routes.entrega_routes import entrega_bp
 from src.routes.anuncio_routes import anuncio_bp
-from src.routes.archivo_educativo_routes import archivo_educativo_bp
 from src.config.settings import Config
 import logging
 from flask_cors import CORS
@@ -29,14 +28,13 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
     app.config['DEBUG'] = Config.FLASK_DEBUG
     
-    # Registrar blueprints
+    # Registrar blueprints - SOLO archivo_bp unificado
     app.register_blueprint(archivo_bp)
     app.register_blueprint(tema_bp)
     app.register_blueprint(publicacion_bp)
     app.register_blueprint(tarea_bp)
     app.register_blueprint(entrega_bp)
     app.register_blueprint(anuncio_bp)
-    app.register_blueprint(archivo_educativo_bp)
     
     # Ruta de salud
     @app.route('/health', methods=['GET'])
@@ -47,7 +45,11 @@ def create_app():
             "message": "Servicio funcionando correctamente",
             "data": {
                 "service": "MicroService-Content",
-                "version": "1.0.0"
+                "version": "2.0.0"
+            }
+        }), 200
+                "service": "MicroService-Content",
+                "version": "2.0.0"
             }
         }), 200
     
@@ -57,10 +59,32 @@ def create_app():
         return jsonify({
             "status": "success",
             "code": 200,
-            "message": "MicroService-Content API - Plataforma Educativa",
+            "message": "MicroService-Content API - Plataforma Educativa (Versión Unificada)",
             "data": {
-                "version": "1.0.0",
+                "version": "2.0.0",
                 "endpoints": {
+                    "archivos_contenido": {
+                        "subir_archivo": "POST /archivos/contenido/subir",
+                        "subir_multiples": "POST /archivos/contenido/subir-multiples",
+                        "obtener_info": "POST /archivos/contenido/info",
+                        "listar_archivos": "POST /archivos/contenido/listar",
+                        "descargar_archivo": "POST /archivos/contenido/descargar",
+                        "eliminar_archivo": "DELETE /archivos/contenido/eliminar"
+                    },
+                    "archivos_educativos": {
+                        "subir_publicacion": "POST /archivos/educativo/publicacion/upload",
+                        "subir_tarea": "POST /archivos/educativo/tarea/upload",
+                        "subir_entrega": "POST /archivos/educativo/entrega/upload",
+                        "subir_anuncio": "POST /archivos/educativo/anuncio/upload",
+                        "obtener_por_modulo": "POST /archivos/educativo/modulo",
+                        "obtener_por_usuario": "POST /archivos/educativo/usuario",
+                        "eliminar_archivo": "DELETE /archivos/educativo/eliminar"
+                    },
+                    "archivos_generales": {
+                        "listar_todos": "GET /archivos/listar-todos",
+                        "buscar_archivos": "POST /archivos/buscar",
+                        "estadisticas": "POST /archivos/estadisticas"
+                    },
                     "temas": {
                         "obtener_temas": "POST /temas/obtener",
                         "crear_tema": "POST /temas/",
@@ -71,46 +95,24 @@ def create_app():
                         "obtener_publicaciones": "POST /publicaciones/obtener",
                         "crear_publicacion": "POST /publicaciones/",
                         "actualizar_publicacion": "PUT /publicaciones/",
-                        "eliminar_publicacion": "DELETE /publicaciones/",
-                        "subir_archivo": "POST /publicaciones/upload"
+                        "eliminar_publicacion": "DELETE /publicaciones/"
                     },
                     "tareas": {
                         "obtener_tareas": "POST /tareas/obtener",
                         "crear_tarea": "POST /tareas/",
                         "actualizar_tarea": "PUT /tareas/",
-                        "eliminar_tarea": "DELETE /tareas/",
-                        "subir_archivo": "POST /tareas/upload"
+                        "eliminar_tarea": "DELETE /tareas/"
                     },
                     "entregas": {
                         "obtener_entregas": "POST /entregas/obtener",
                         "crear_entrega": "POST /entregas/",
-                        "actualizar_entrega": "PUT /entregas/",
-                        "subir_archivo": "POST /entregas/upload"
+                        "actualizar_entrega": "PUT /entregas/"
                     },
                     "anuncios": {
                         "obtener_anuncios": "POST /anuncios/obtener",
                         "crear_anuncio": "POST /anuncios/",
                         "actualizar_anuncio": "PUT /anuncios/",
-                        "eliminar_anuncio": "DELETE /anuncios/",
-                        "subir_archivo": "POST /anuncios/upload"
-                    },
-                    "archivos": {
-                        "obtener_por_usuario": "POST /archivos/usuario",
-                        "obtener_por_modulo": "POST /archivos/modulo",
-                        "listar_todos": "GET /archivos/",
-                        "eliminar_archivo": "DELETE /archivos/",
-                        "registrar_archivo": "POST /archivos/"
-                    },
-                    "archivos_contenido": {
-                        "subir_archivo": "POST /apicontenido/subir",
-                        "subir_multiples": "POST /apicontenido/subir-multiples",
-                        "obtener_info": "POST /apicontenido/info",
-                        "listar_archivos": "POST /apicontenido/listar",
-                        "descargar_archivo": "POST /apicontenido/descargar",
-                        "descargar_carpeta": "POST /apicontenido/descargar-carpeta",
-                        "actualizar_metadatos": "PUT /apicontenido/actualizar",
-                        "eliminar_archivo": "DELETE /apicontenido/eliminar",
-                        "eliminar_usuario": "DELETE /apicontenido/eliminar-usuario"
+                        "eliminar_anuncio": "DELETE /anuncios/"
                     },
                     "health_check": "GET /health"
                 }

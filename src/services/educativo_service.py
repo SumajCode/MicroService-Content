@@ -269,6 +269,10 @@ class EducativoService:
     # MÉTODOS PARA ARCHIVOS EDUCATIVOS
     def insertar_archivo_educativo(self, documento: Dict) -> str:
         try:
+            # Asegurar que el documento tenga todos los campos necesarios
+            if 'mega_node_id' not in documento:
+                documento['mega_node_id'] = None
+        
             resultado = self.archivos_collection.insert_one(documento)
             return str(resultado.inserted_id)
         except Exception as e:
