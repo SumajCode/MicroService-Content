@@ -365,9 +365,20 @@ class ArchivoController:
             if archivo['usuario_id'] != usuario_id:
                 return self._response_format("error", 403, "No tienes permisos para eliminar este archivo")
             
-            # Eliminar de MEGA
-            if self.mega_service.eliminar_archivo(archivo['archivo']['mega_node_id']):
-                # Marcar como eliminado en MongoDB
+            # Extraer node_id real
+            mega_node_data = archivo['archivo'].get('mega_node_id')
+
+            # Si es string, usarlo directamente
+            if isinstance(mega_node_data, str):
+                node_id = mega_node_data
+            # Si es dict con estructura tipo {'f': [{'h': ...}]}
+            elif isinstance(mega_node_data, dict):
+                node_id = mega_node_data.get('f', [{}])[0].get('h')
+            else:
+                node_id = None
+
+            # Validar que tengamos un node_id y eliminar
+            if node_id and self.mega_service.eliminar_archivo(node_id):
                 if self.mongo_service.eliminar_archivo(archivo_id):
                     return self._response_format("success", 200, "Archivo eliminado exitosamente", {
                         "userId": usuario_id,
