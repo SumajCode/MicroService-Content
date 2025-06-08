@@ -12,6 +12,7 @@ class MegaService:
         self.email = email
         self.password = password
         self.m = None
+        self._login()
     
     def _login(self):
         """Inicia sesión en MEGA"""
@@ -25,7 +26,6 @@ class MegaService:
     def crear_carpeta(self, ruta: str) -> bool:
         """Crea una carpeta en MEGA si no existe"""
         try:
-            self._login()
             # Dividir la ruta en partes
             partes = [p for p in ruta.split('/') if p]
             carpeta_actual = None
@@ -58,7 +58,6 @@ class MegaService:
     def subir_archivo(self, archivo_path: str, carpeta_destino: str, nombre_archivo: str) -> Optional[Dict]:
         """Sube un archivo a MEGA"""
         try:
-            self._login()
             # Crear carpeta si no existe
             self.crear_carpeta(carpeta_destino)
             
@@ -130,7 +129,6 @@ class MegaService:
     def descargar_archivo(self, node_id: str) -> Optional[str]:
         """Descarga un archivo de MEGA y retorna la ruta temporal"""
         try:
-            self._login()
             # Crear directorio temporal
             temp_dir = tempfile.mkdtemp()
             
@@ -147,7 +145,6 @@ class MegaService:
     def eliminar_archivo(self, node_id: str) -> bool:
         """Elimina un archivo de MEGA usando su node_id"""
         try:
-            self._login()
             self.m.delete(node_id)
             logger.info(f"Archivo eliminado: {node_id}")
             return True
@@ -159,7 +156,6 @@ class MegaService:
     def mover_archivo(self, node_id: str, nueva_ruta: str) -> bool:
         """Mueve un archivo a una nueva carpeta"""
         try:
-            self._login()
             # Crear carpeta destino si no existe
             self.crear_carpeta(nueva_ruta)
             
@@ -200,7 +196,6 @@ class MegaService:
     def eliminar_carpeta_usuario(self, usuario_id: str) -> bool:
         """Elimina todas las carpetas de un usuario"""
         try:
-            self._login()
             carpetas_usuario = [
                 f"Contenido Personal/{usuario_id}",
                 f"Contenido Educativo/{usuario_id}"
@@ -219,7 +214,6 @@ class MegaService:
     def _eliminar_carpeta_recursiva(self, ruta_carpeta: str):
         """Elimina una carpeta y todo su contenido"""
         try:
-            self._login()
             archivos = self.m.get_files()
             
             for file_id, file_info in archivos.items():
