@@ -121,24 +121,34 @@ class ArchivoController:
         """2. Subir múltiples archivos a una carpeta específica"""
         try:
             # Validar que se enviaron archivos
+            logger.info("Inicio de la carga de múltiples archivos")
+
             if 'archivos' not in request.files:
+                logger.warning("No se enviaron archivos en la solicitud")
                 return self._response_format("error", 400, "No se enviaron archivos")
             
             archivos = request.files.getlist('archivos')
             if not archivos or all(archivo.filename == '' for archivo in archivos):
+                logger.warning("No se seleccionaron archivos")
                 return self._response_format("error", 400, "No se seleccionaron archivos")
             
+            logger.info(f"{len(archivos)} archivos recibidos")
+
             # Obtener datos del formulario
             usuario_id = request.form.get('userId')
             carpeta = request.form.get('carpeta')
+            logger.info(f"userId: {usuario_id}, carpeta: {carpeta}")
             
             if not usuario_id or not carpeta:
+                logger.warning("Faltan userId o carpeta")
                 return self._response_format("error", 400, "userId y carpeta son requeridos")
             
             if not FileUtils.validar_carpeta(carpeta):
+                logger.warning("Carpeta inválida")
                 return self._response_format("error", 400, "Carpeta inválida")
             
             # Verificar/crear carpetas del usuario
+            logger.info("Verificando carpetas del usuario")
             self._verificar_carpetas_usuario(usuario_id)
             
             archivos_subidos = []
@@ -146,24 +156,32 @@ class ArchivoController:
             
             for archivo in archivos:
                 try:
+                    logger.info(f"Procesando archivo: {archivo.filename}")
+
                     if archivo.filename == '':
+                        logger.warning("Archivo sin nombre, se omite")
                         continue
                         
                     if not FileUtils.archivo_permitido(archivo.filename):
+                        logger.warning(f"Archivo no permitido: {archivo.filename}")
                         errores.append(f"Archivo {archivo.filename}: tipo no permitido")
                         continue
                     
                     # Obtener información del archivo
                     archivo_info = FileUtils.obtener_info_archivo(archivo)
+                    logger.info(f"Información del archivo obtenida: {archivo_info}")
                     
                     # Guardar archivo temporalmente
                     with tempfile.TemporaryDirectory() as temp_dir:
                         temp_path = FileUtils.guardar_archivo_temporal(archivo, temp_dir)
+                        logger.info(f"Archivo guardado temporalmente en: {temp_path}")
                         
                         # Generar ruta en MEGA
                         ruta_mega = FileUtils.generar_ruta_mega(usuario_id, carpeta)
+                        logger.info(f"Ruta MEGA generada: {ruta_mega}")
                         
                         # Subir a MEGA
+                        logger.info("Intentando subir archivo a MEGA...")
                         resultado_mega = self.mega_service.subir_archivo(
                             temp_path, 
                             ruta_mega, 
@@ -171,9 +189,12 @@ class ArchivoController:
                         )
                         
                         if not resultado_mega:
+                            logger.error(f"Fallo al subir {archivo.filename} a MEGA")
                             errores.append(f"Error al subir {archivo.filename} a MEGA")
                             continue
                         
+                        logger.info(f"Archivo subido a MEGA: {resultado_mega}")
+
                         # Actualizar información del archivo
                         archivo_info.update({
                             "link": resultado_mega['link'],
@@ -187,9 +208,11 @@ class ArchivoController:
                             carpeta,
                             archivo_info
                         )
-                        
+                        logger.info("Documento MongoDB creado")
+
                         # Guardar en MongoDB
                         archivo_id = self.mongo_service.insertar_archivo(documento)
+                        logger.info(f"Archivo insertado en MongoDB con ID: {archivo_id}")
                         
                         archivos_subidos.append({
                             "id": archivo_id,
@@ -199,8 +222,11 @@ class ArchivoController:
                             "size": archivo_info['peso_bytes'],
                             "link": resultado_mega['link']
                         })
-                        
+
+                        logger.info(f"Archivo procesado exitosamente: {archivo.filename}")
+
                 except Exception as e:
+                    logger.error(f"Error al procesar archivo {archivo.filename}: {str(e)}", exc_info=True)
                     errores.append(f"Error al procesar {archivo.filename}: {str(e)}")
             
             if archivos_subidos:
@@ -208,12 +234,14 @@ class ArchivoController:
                 if errores:
                     message += f". {len(errores)} archivos fallaron"
                 
+                logger.info("Carga de archivos completada con éxito")
                 return self._response_format("success", 201, message, {
                     "userId": usuario_id,
                     "files": archivos_subidos,
                     "errors": errores if errores else None
                 })
             else:
+                logger.error("No se pudo subir ningún archivo")
                 return self._response_format("error", 400, "No se pudo subir ningún archivo", {
                     "errors": errores
                 })
