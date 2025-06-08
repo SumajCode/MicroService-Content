@@ -347,50 +347,74 @@ class ArchivoController:
         """6. Eliminar un archivo de contenido"""
         try:
             data = request.get_json()
+            logger.info("Solicitud recibida para eliminar archivo de contenido.")
+            logger.debug(f"Payload recibido: {data}")
+
             if not data:
+                logger.warning("No se recibieron datos JSON en la solicitud.")
                 return self._response_format("error", 400, "Datos JSON requeridos")
             
             archivo_id = data.get('fileId')
             usuario_id = data.get('userId')
             
             if not archivo_id or not usuario_id:
+                logger.warning("Faltan 'fileId' o 'userId' en los datos recibidos.")
                 return self._response_format("error", 400, "fileId y userId son requeridos")
             
             # Obtener archivo de la base de datos
+            logger.info(f"Buscando archivo con ID {archivo_id} en MongoDB.")
             archivo = self.mongo_service.obtener_archivo_por_id(archivo_id)
             if not archivo:
+                logger.error(f"Archivo con ID {archivo_id} no encontrado.")
                 return self._response_format("error", 404, "Archivo no encontrado")
             
             # Verificar que el archivo pertenece al usuario
+            logger.info(f"Verificando propiedad del archivo para el usuario {usuario_id}.")
             if archivo['usuario_id'] != usuario_id:
+                logger.warning(f"Usuario {usuario_id} no tiene permiso para eliminar el archivo {archivo_id}.")
                 return self._response_format("error", 403, "No tienes permisos para eliminar este archivo")
             
             # Extraer node_id real
+            logger.debug("Extrayendo node_id de MEGA.")
             mega_node_data = archivo['archivo'].get('mega_node_id')
+            logger.debug(f"mega_node_id obtenido: {mega_node_data}")
 
             # Si es string, usarlo directamente
             if isinstance(mega_node_data, str):
                 node_id = mega_node_data
+                logger.debug("mega_node_id es un string válido.")
             # Si es dict con estructura tipo {'f': [{'h': ...}]}
             elif isinstance(mega_node_data, dict):
                 node_id = mega_node_data.get('f', [{}])[0].get('h')
+                logger.debug(f"mega_node_id extraído desde estructura dict: {node_id}")
             else:
                 node_id = None
+                logger.warning("mega_node_id no tiene un formato válido.")
+
+            if node_id:
+                logger.info(f"Intentando eliminar archivo de MEGA con node_id: {node_id}")
+            else:
+                logger.error("No se pudo obtener un node_id válido.")
 
             # Validar que tengamos un node_id y eliminar
             if node_id and self.mega_service.eliminar_archivo(node_id):
-                if self.mongo_service.eliminar_archivo(archivo_id):
+                logger.info(f"Archivo eliminado de MEGA exitosamente: {node_id}")
+                logger.info(f"Intentando eliminar referencia en MongoDB: {archivo_id}")
+                if self.mongo_service.ealiminar_archivo(archivo_id):
+                    logger.info(f"Archivo eliminado de MongoDB exitosamente: {archivo_id}")
                     return self._response_format("success", 200, "Archivo eliminado exitosamente", {
                         "userId": usuario_id,
                         "fileId": archivo_id
                     })
                 else:
+                    logger.error("Falló la eliminación del archivo en MongoDB.")
                     return self._response_format("error", 500, "Error al actualizar estado en base de datos")
             else:
+                logger.error("Falló la eliminación del archivo en MEGA.")
                 return self._response_format("error", 500, "Error al eliminar archivo de MEGA")
                 
         except Exception as e:
-            logger.error(f"Error al eliminar archivo de contenido: {e}")
+            logger.exception(f"Error al eliminar archivo de contenido: {e}")
             return self._response_format("error", 500, "Error interno del servidor")
     
     # ==================== ARCHIVOS EDUCATIVOS ====================
