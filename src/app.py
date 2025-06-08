@@ -48,10 +48,6 @@ def create_app():
                 "version": "2.0.0"
             }
         }), 200
-                "service": "MicroService-Content",
-                "version": "2.0.0"
-            }
-        }), 200
     
     # Ruta raíz
     @app.route('/', methods=['GET'])
