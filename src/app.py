@@ -17,7 +17,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-def create_app():
+def create_app(testing=False):
     """Factory function para crear la aplicación Flask"""
     app = Flask(__name__)
     
@@ -27,16 +27,19 @@ def create_app():
     # Configuración
     app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
     app.config['DEBUG'] = Config.FLASK_DEBUG
+    app.config['TESTING'] = testing
     
-    # Registrar blueprints - SOLO archivo_bp unificado
-    app.register_blueprint(archivo_bp)
-    app.register_blueprint(tema_bp)
-    app.register_blueprint(publicacion_bp)
-    app.register_blueprint(tarea_bp)
-    app.register_blueprint(entrega_bp)
-    app.register_blueprint(anuncio_bp)
+    # Si estamos en modo testing, no registrar los blueprints que requieren conexiones externas
+    if not testing:
+        # Registrar blueprints - SOLO archivo_bp unificado
+        app.register_blueprint(archivo_bp)
+        app.register_blueprint(tema_bp)
+        app.register_blueprint(publicacion_bp)
+        app.register_blueprint(tarea_bp)
+        app.register_blueprint(entrega_bp)
+        app.register_blueprint(anuncio_bp)
     
-    # Ruta de salud
+    # Ruta de salud (siempre disponible)
     @app.route('/health', methods=['GET'])
     def health_check():
         return jsonify({
@@ -45,7 +48,8 @@ def create_app():
             "message": "Servicio funcionando correctamente",
             "data": {
                 "service": "MicroService-Content",
-                "version": "2.0.0"
+                "version": "2.0.0",
+                "testing": testing
             }
         }), 200
     
@@ -58,6 +62,7 @@ def create_app():
             "message": "MicroService-Content API - Plataforma Educativa (Versión Unificada)",
             "data": {
                 "version": "2.0.0",
+                "testing": testing,
                 "endpoints": {
                     "archivos_contenido": {
                         "subir_archivo": "POST /archivos/contenido/subir",

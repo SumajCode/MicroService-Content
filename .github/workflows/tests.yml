@@ -1,0 +1,69 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:5.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov pytest-flask
+    
+    - name: Wait for MongoDB
+      run: |
+        until mongosh --eval "print(\"MongoDB is ready\")" > /dev/null 2>&1; do
+          echo "Waiting for MongoDB..."
+          sleep 2
+        done
+        echo "MongoDB is ready!"
+    
+    - name: Set environment variables for testing
+      run: |
+        echo "MONGO_URI=mongodb://localhost:27017/test_microservice_content" >> $GITHUB_ENV
+        echo "MEGA_EMAIL=test@example.com" >> $GITHUB_ENV
+        echo "MEGA_PASSWORD=test_password" >> $GITHUB_ENV
+        echo "FLASK_ENV=testing" >> $GITHUB_ENV
+        echo "FLASK_DEBUG=False" >> $GITHUB_ENV
+    
+    - name: Run tests with pytest
+      run: |
+        cd src && python -m pytest ../tests/ -v --tb=short --cov=. --cov-report=term-missing
+    
+    - name: Upload coverage reports
+      if: success()
+      run: |
+        echo "Tests completed successfully!"
