@@ -1,157 +1,160 @@
 from flask import Flask, jsonify
-from flask_jwt_extended import JWTManager
+from routes.archivo_routes import archivo_bp
+from routes.tema_routes import tema_bp
+from routes.publicacion_routes import publicacion_bp
+from routes.tarea_routes import tarea_bp
+from routes.entrega_routes import entrega_bp
+from routes.anuncio_routes import anuncio_bp
+from config.settings import Config
+import logging
 from flask_cors import CORS
-from pymongo import MongoClient
-import os
-import cloudinary
-import cloudinary.uploader
 
-from src.config import Config
-from src.models import CursoModel
-from src.controllers import CursoController
-from src.routes import init_curso_routes, init_auth_routes
+# Configurar logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
-def create_app():
+logger = logging.getLogger(__name__)
+
+def create_app(testing=False):
+    """Factory function para crear la aplicación Flask"""
     app = Flask(__name__)
     
-    # Configuración
-    app.config.from_object(Config)
-    
-    # Configurar CORS
+    # Habilitar CORS
     CORS(app)
     
-    # Configurar JWT
-    app.config['JWT_SECRET_KEY'] = Config.JWT_SECRET_KEY
-    jwt = JWTManager(app)
+    # Configuración
+    app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
+    app.config['DEBUG'] = Config.FLASK_DEBUG
+    app.config['TESTING'] = testing
     
-    # Configurar Cloudinary
-    cloudinary.config(
-        cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
-        api_key=os.getenv('CLOUDINARY_API_KEY'),
-        api_secret=os.getenv('CLOUDINARY_API_SECRET')
-    )
+    # Si estamos en modo testing, no registrar los blueprints que requieren conexiones externas
+    if not testing:
+        # Registrar blueprints - SOLO archivo_bp unificado
+        app.register_blueprint(archivo_bp)
+        app.register_blueprint(tema_bp)
+        app.register_blueprint(publicacion_bp)
+        app.register_blueprint(tarea_bp)
+        app.register_blueprint(entrega_bp)
+        app.register_blueprint(anuncio_bp)
     
-    # Conectar a MongoDB
-    try:
-        client = MongoClient(Config.MONGO_URI)
-        # Verificar la conexión
-        client.admin.command('ping')
-        print("Conexión a MongoDB establecida correctamente")
-        db = client.get_database()
-    except Exception as e:
-        print(f"Error al conectar a MongoDB: {str(e)}")
-        db = None
-    
-    # Inicializar modelos
-    curso_model = CursoModel(db)
-    
-    # Inicializar controladores
-    curso_controller = CursoController(curso_model)
-    
-    # Registrar rutas
-    app.register_blueprint(init_auth_routes())
-    app.register_blueprint(init_curso_routes(curso_controller))
-    
-    @app.route('/')
-    def index():
+    # Ruta de salud (siempre disponible)
+    @app.route('/health', methods=['GET'])
+    def health_check():
         return jsonify({
-            "mensaje": "API de Gestión de Cursos",
-            "version": "1.0.0",
-            "estado": "online"
-        })
+            "status": "success",
+            "code": 200,
+            "message": "Servicio funcionando correctamente",
+            "data": {
+                "service": "MicroService-Content",
+                "version": "2.0.0",
+                "testing": testing
+            }
+        }), 200
     
+    # Ruta raíz
+    @app.route('/', methods=['GET'])
+    def home():
+        return jsonify({
+            "status": "success",
+            "code": 200,
+            "message": "MicroService-Content API - Plataforma Educativa (Versión Unificada)",
+            "data": {
+                "version": "2.0.0",
+                "testing": testing,
+                "endpoints": {
+                    "archivos_contenido": {
+                        "subir_archivo": "POST /archivos/contenido/subir",
+                        "subir_multiples": "POST /archivos/contenido/subir-multiples",
+                        "obtener_info": "POST /archivos/contenido/info",
+                        "listar_archivos": "POST /archivos/contenido/listar",
+                        "descargar_archivo": "POST /archivos/contenido/descargar",
+                        "eliminar_archivo": "DELETE /archivos/contenido/eliminar"
+                    },
+                    "archivos_educativos": {
+                        "subir_publicacion": "POST /archivos/educativo/publicacion/upload",
+                        "subir_tarea": "POST /archivos/educativo/tarea/upload",
+                        "subir_entrega": "POST /archivos/educativo/entrega/upload",
+                        "subir_anuncio": "POST /archivos/educativo/anuncio/upload",
+                        "obtener_por_modulo": "POST /archivos/educativo/modulo",
+                        "obtener_por_usuario": "POST /archivos/educativo/usuario",
+                        "eliminar_archivo": "DELETE /archivos/educativo/eliminar"
+                    },
+                    "archivos_generales": {
+                        "listar_todos": "GET /archivos/listar-todos",
+                        "buscar_archivos": "POST /archivos/buscar",
+                        "estadisticas": "POST /archivos/estadisticas"
+                    },
+                    "temas": {
+                        "obtener_temas": "POST /temas/obtener",
+                        "crear_tema": "POST /temas/",
+                        "actualizar_tema": "PUT /temas/",
+                        "eliminar_tema": "DELETE /temas/"
+                    },
+                    "publicaciones": {
+                        "obtener_publicaciones": "POST /publicaciones/obtener",
+                        "crear_publicacion": "POST /publicaciones/",
+                        "actualizar_publicacion": "PUT /publicaciones/",
+                        "eliminar_publicacion": "DELETE /publicaciones/"
+                    },
+                    "tareas": {
+                        "obtener_tareas": "POST /tareas/obtener",
+                        "crear_tarea": "POST /tareas/",
+                        "actualizar_tarea": "PUT /tareas/",
+                        "eliminar_tarea": "DELETE /tareas/"
+                    },
+                    "entregas": {
+                        "obtener_entregas": "POST /entregas/obtener",
+                        "crear_entrega": "POST /entregas/",
+                        "actualizar_entrega": "PUT /entregas/"
+                    },
+                    "anuncios": {
+                        "obtener_anuncios": "POST /anuncios/obtener",
+                        "crear_anuncio": "POST /anuncios/",
+                        "actualizar_anuncio": "PUT /anuncios/",
+                        "eliminar_anuncio": "DELETE /anuncios/"
+                    },
+                    "health_check": "GET /health"
+                }
+            }
+        }), 200
+    
+    # Manejo de errores
     @app.errorhandler(404)
     def not_found(error):
-        return jsonify({"error": "Recurso no encontrado"}), 404
+        return jsonify({
+            "status": "error",
+            "code": 404,
+            "message": "Endpoint no encontrado",
+            "data": None
+        }), 404
+    
+    @app.errorhandler(413)
+    def too_large(error):
+        return jsonify({
+            "status": "error",
+            "code": 413,
+            "message": "Archivo demasiado grande",
+            "data": None
+        }), 413
     
     @app.errorhandler(500)
-    def server_error(error):
-        return jsonify({"error": "Error interno del servidor"}), 500
+    def internal_error(error):
+        logger.error(f"Error interno del servidor: {error}")
+        return jsonify({
+            "status": "error",
+            "code": 500,
+            "message": "Error interno del servidor",
+            "data": None
+        }), 500
     
     return app
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app = create_app()
     app.run(
-        host="0.0.0.0",
+        host='0.0.0.0',
         port=Config.PORT,
-        debug=Config.DEBUG
-    )from flask import Flask, jsonify
-from flask_jwt_extended import JWTManager
-from flask_cors import CORS
-from pymongo import MongoClient
-import os
-import cloudinary
-import cloudinary.uploader
-
-from src.config import Config
-from src.models import CursoModel
-from src.controllers import CursoController
-from src.routes import init_curso_routes, init_auth_routes
-
-def create_app():
-    app = Flask(__name__)
-    
-    # Configuración
-    app.config.from_object(Config)
-    
-    # Configurar CORS
-    CORS(app)
-    
-    # Configurar JWT
-    app.config['JWT_SECRET_KEY'] = Config.JWT_SECRET_KEY
-    jwt = JWTManager(app)
-    
-    # Configurar Cloudinary
-    cloudinary.config(
-        cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
-        api_key=os.getenv('CLOUDINARY_API_KEY'),
-        api_secret=os.getenv('CLOUDINARY_API_SECRET')
-    )
-    
-    # Conectar a MongoDB
-    try:
-        client = MongoClient(Config.MONGO_URI)
-        # Verificar la conexión
-        client.admin.command('ping')
-        print("Conexión a MongoDB establecida correctamente")
-        db = client.get_database()
-    except Exception as e:
-        print(f"Error al conectar a MongoDB: {str(e)}")
-        db = None
-    
-    # Inicializar modelos
-    curso_model = CursoModel(db)
-    
-    # Inicializar controladores
-    curso_controller = CursoController(curso_model)
-    
-    # Registrar rutas
-    app.register_blueprint(init_auth_routes())
-    app.register_blueprint(init_curso_routes(curso_controller))
-    
-    @app.route('/')
-    def index():
-        return jsonify({
-            "mensaje": "API de Gestión de Cursos",
-            "version": "1.0.0",
-            "estado": "online"
-        })
-    
-    @app.errorhandler(404)
-    def not_found(error):
-        return jsonify({"error": "Recurso no encontrado"}), 404
-    
-    @app.errorhandler(500)
-    def server_error(error):
-        return jsonify({"error": "Error interno del servidor"}), 500
-    
-    return app
-
-if __name__ == "__main__":
-    app = create_app()
-    app.run(
-        host="0.0.0.0",
-        port=Config.PORT,
-        debug=Config.DEBUG
+        debug=Config.FLASK_DEBUG
     )
