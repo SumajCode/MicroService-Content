@@ -36,15 +36,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-cov pytest-flask
-    
-    - name: Set environment variables for testing
-      run: |
-        echo "MONGO_URI=mongodb://localhost:27017/test_microservice_content" >> $GITHUB_ENV
-        echo "MEGA_EMAIL=test@example.com" >> $GITHUB_ENV
-        echo "MEGA_PASSWORD=test_password" >> $GITHUB_ENV
-        echo "FLASK_ENV=testing" >> $GITHUB_ENV
-        echo "FLASK_DEBUG=False" >> $GITHUB_ENV
-    
+        
     - name: Run tests with pytest
       run: |
         cd src && python -m pytest ../tests/ -v --tb=short --cov=. --cov-report=term-missing
