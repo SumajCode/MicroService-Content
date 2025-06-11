@@ -45,7 +45,7 @@ jobs:
     
     - name: Wait for MongoDB
       run: |
-        until mongosh --eval "print(\"MongoDB is ready\")" > /dev/null 2>&1; do
+        until mongo --eval "print(\"MongoDB is ready\")" > /dev/null 2>&1; do
           echo "Waiting for MongoDB..."
           sleep 2
         done

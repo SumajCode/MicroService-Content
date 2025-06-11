@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/microservice_content')
+    MONGO_URI = os.getenv('MONGO_URI')
     MEGA_EMAIL = os.getenv('MEGA_EMAIL')
     MEGA_PASSWORD = os.getenv('MEGA_PASSWORD')
     API_USUARIOS_URL = os.getenv('API_USUARIOS_URL', 'https://mock-api-external.local/api/usuarios/')
