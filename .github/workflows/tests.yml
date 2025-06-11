@@ -15,13 +15,6 @@ jobs:
         image: mongo:5.0
         ports:
           - 27017:27017
-        options: >-
-          --health-cmd mongosh --eval "db.adminCommand('ping')" --quiet
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          --health-start-period 20s
-
     steps:
     - uses: actions/checkout@v4
     
@@ -44,13 +37,6 @@ jobs:
         pip install -r requirements.txt
         pip install pytest pytest-cov pytest-flask
     
-    - name: Verify MongoDB connection
-      run: |
-        # Esperar a que MongoDB esté disponible
-        echo "Verificando conexión a MongoDB..."
-        timeout 60s bash -c 'until mongosh --eval "db.adminCommand(\"ping\")" --quiet; do echo "Esperando a MongoDB..."; sleep 2; done'
-        echo "MongoDB está listo!"
-    
     - name: Set environment variables for testing
       run: |
         echo "MONGO_URI=mongodb://localhost:27017/test_microservice_content" >> $GITHUB_ENV
@@ -61,7 +47,7 @@ jobs:
     
     - name: Run tests with pytest
       run: |
-        cd src && python -m pytest ../tests/ -v --tb=short
+        cd src && python -m pytest ../tests/ -v --tb=short --cov=. --cov-report=term-missing
     
     - name: Upload coverage reports
       if: success()
