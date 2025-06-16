@@ -1,43 +1,64 @@
 from domain.mongodb.MongoService import ServicioMongoDB
 
 class Query:
-    def __init__(self):
+    def __init__(self, nombreColeccion):
         mongoService = ServicioMongoDB()
         self.connDB = mongoService.connectionDB()
+        self.connColeccion = self.connDB[nombreColeccion]
 
-    def insertarUnicoEnColeccion(self, datos: dict):
+    def insertarEnColeccion(self, opciones: dict):
         try:
-            self.connDB.insert_one(datos)
-            return "Datos insertados correctamente."
-        except Exception as e:
-            return f"Hubo un fallo al insertar los datos: {e}"
-    
-    def insertarVariosEnColeccion(self, datos: list[dict]):
-        try:
-            self.connDB.insert_many(datos)
-            return "Lista de datos insertados correctamente."
+            if opciones['todo']:
+                self.connColeccion.insert_many(opciones['datos'])
+                return "Lista de datos agregados correctamente."
+            self.connColeccion.insert_one(opciones['datos'])
+            return "Datos agregados correctamente."
         except Exception as e:
             return f"Hubo un fallo al insertar los datos: {e}"
 
     def eliminarDatosEnColeccion(self, opciones: dict):
         try:
-            if 'todo' in opciones.keys() and opciones['todo']:
-                self.connDB.delete_many(opciones['datos'])
+            if opciones['todo']:
+                self.connColeccion.delete_many(opciones['filtro'])
                 return "Lista de datos eliminados correctamente."
-            self.connDB.delete_one(opciones['datos'])
+            self.connColeccion.delete_one(opciones['filtro'])
             return "Datos eliminados correctamente."
         except Exception as e:
-            return f"Hubo un fallo al insertar los datos: {e}"
+            return f"Hubo un fallo al eliminar los datos: {e}"
+
+    def actualizarDatosEnColeccion(self, opciones: dict):
+        try:
+            if opciones['todo']:
+                self.connColeccion.update_many(opciones['filtro'], opciones['datos'])
+                return "Lista de datos actualizados correctamente."
+            self.connColeccion.update_one(opciones['filtro'], opciones['datos'])
+            return "Datos actualizados correctamente."
+        except Exception as e:
+            return f"Hubo un fallo al actualizar los datos: {e}"
 
     def encontrarDatos(self, opciones: dict):
         try:
-            if 'todo' in opciones.keys() and opciones['todo']:
-                self.connDB.delete_many(opciones['datos'])
-                return "Lista de datos eliminados correctamente."
-            self.connDB.delete_one(opciones['datos'])
-            return "Datos eliminados correctamente."
+            if opciones['todo']:
+                return {
+                    'data':self.connColeccion.insert_many(opciones['datos'], opciones['proyeccion']),
+                    'message': "Lista de datos contrados."
+                }
+            return {
+                'datos': self.connColeccion.insert_one(opciones['datos'], opciones['proyeccion']),
+                'message': "Datos contrados."
+            }
         except Exception as e:
-            return f"Hubo un fallo al insertar los datos: {e}"
+            return {
+                'data':None,
+                'message': f"Hubo un fallo al insertar los datos: {e}"
+            }
+
+    def contarRegistros(self, nombreColeccion: str):
+        try:
+            if nombreColeccion and len(nombreColeccion) > 0:
+                return self.connDB[nombreColeccion].estimated_document_count()
+        except Exception as e:
+            return f"Error encontrado al retornar cantidad de registros: {e}"
 
     def valorUnico(self, valorUnico: str, indices: list, nombreColeccion: str):
         if nombreColeccion is not None and len(nombreColeccion) > 0 :

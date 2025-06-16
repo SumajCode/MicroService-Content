@@ -5,6 +5,7 @@ class CollectionMongo:
         self.query = Query()
         self.nombreColeccion = nombreColeccion
         self.opciones = opciones
+        self.columnas = []
         self.validador = {}
         self.valuesIndex = None
         self.unique = None
@@ -16,6 +17,8 @@ class CollectionMongo:
             self.valuesIndex = self.opciones['values_index']
         if 'unique' in self.opciones.keys():
             self.unique = self.opciones['unique']
+        if 'columns' in self.opciones.keys():
+            self.columnas = self.opciones['columns']
 
     def crearColeccion(self):
         self.initCollection()
