@@ -38,7 +38,7 @@ class Controller:
         datos = {}
         if 'request' in opciones.keys() and opciones['request']:
             datos = self.obtenerRequest(opciones['request'])
-        claves = datos.keys()
+        claves = datos['data'].keys()
         for clave in opciones['rules']:
             if clave not in claves:
                 return jsonify({
