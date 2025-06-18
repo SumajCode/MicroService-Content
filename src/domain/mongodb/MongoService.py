@@ -8,6 +8,8 @@ class ServicioMongoDB:
         self.host = Config.MONGO_HOST
         self.db = Config.MONGO_DB
         self.appname = Config.MONGO_APP_NAME
+        self.srv = Config.MONGO_SRV
+        self.uri = Config.MONGO_URI
     
     def connection(self):
         params = {
@@ -15,8 +17,9 @@ class ServicioMongoDB:
             'username':self.user,
             'password':self.password,
             'appname':self.appname,
-            'srv':True
         }
+        if self.srv:
+            return MongoClient(self.uri)
         return MongoClient(**params)
 
     def connectionDB(self):

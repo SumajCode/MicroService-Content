@@ -1,4 +1,4 @@
-from db.Collection import CollectionMongo
+from infra.db.Collection import CollectionMongo
 
 class Contenido(CollectionMongo):
     nombreColeccion = 'contenido'
@@ -14,7 +14,9 @@ class Contenido(CollectionMongo):
                         'title': {'bsonType': 'string'},
                         'files': {
                             'bsonType': 'array',
-                            'items': {'bsonType': 'string'}},
+                            'items': {
+                                'bsonType': 'string',
+                                'pattern':'^.*\\.(pdf|jpg|png|docx|py|txt|html|mp4)$'}},
                         'type': {'bsonType': 'string'},
                         'time_deliver': {'bsonType': 'date'},
                         'content': {
@@ -50,15 +52,16 @@ class Contenido(CollectionMongo):
                                 }
                             }
                         },
-                        'timestamp': {'bsonType': 'timestamp'},
+                        'status': {'bsonType', 'string'},
                         'points': {'bsonType': 'double'},
+                        'timestamp': {'bsonType': 'timestamp'},
                     }
                 }
             }
         },
         'values_index':[('id_contenido', 1), ('id_modulo', 1)],
         'unique':'id_contenido',
-        'columns':['id_contenido', 'id_modulo', 'title', 'files', 'type', 'content']
+        'columns':['id_contenido', 'id_modulo', 'title', 'type', 'files', 'time_deliver', 'content', 'status', 'points', 'timestamp']
     }
 
     def __init__(self):

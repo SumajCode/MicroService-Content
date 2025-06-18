@@ -1,26 +1,18 @@
 from infra.controllers.Controller import Controller
-from infra.models.ModuloModel import Modulo
+from infra.models.ContenidoModel import Contenido
 
-class ModuloController(Controller):
+class ContenidoController(Controller):
     
     def __init__(self):
-        modelo = Modulo()
+        modelo = Contenido()
         self.nombreColeccion = modelo.nombreColeccion
         self.columnas = modelo.opciones['columns']
         super().__init__(self.nombreColeccion)
         
     def obtener(self, request):
-        proyeccion = {
-            '_id': 1,
-            'id_docente': 1,
-            'id_materia':1,
-            'title': 1,
-            'desciption': 1,
-            'image': 1,
-        }
         return self.get({
             'request':request, 
-            'proyeccion':proyeccion})
+            'proyeccion':{}})
 
     def crearRegistro(self, request):
         return self.post({

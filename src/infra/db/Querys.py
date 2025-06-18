@@ -1,4 +1,5 @@
 from domain.mongodb.MongoService import ServicioMongoDB
+from bson import ObjectId
 
 class Query:
     def __init__(self, nombreColeccion):
@@ -8,9 +9,16 @@ class Query:
 
     def insertarEnColeccion(self, opciones: dict):
         try:
+            datos = opciones['datos']
+            id = opciones['id']
             if opciones['todo']:
+                for dato in datos:
+                    dato[id] = ObjectId()
+                    dato['timestamp'] = dato[id].generation_time
                 self.connColeccion.insert_many(opciones['datos'])
                 return "Lista de datos agregados correctamente."
+            datos[id] = ObjectId()
+            datos['timestamp'] = datos[id].generation_time
             self.connColeccion.insert_one(opciones['datos'])
             return "Datos agregados correctamente."
         except Exception as e:

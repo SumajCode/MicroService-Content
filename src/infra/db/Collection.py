@@ -2,7 +2,7 @@ from infra.db.Querys import Query
 
 class CollectionMongo:
     def __init__(self, nombreColeccion:str=None, opciones: dict=None):
-        self.query = Query()
+        self.query = Query(nombreColeccion)
         self.nombreColeccion = nombreColeccion
         self.opciones = opciones
         self.columnas = []

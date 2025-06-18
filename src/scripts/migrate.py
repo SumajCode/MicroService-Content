@@ -1,8 +1,13 @@
-from infra.models.CursoModel import Curso
+from infra.models.ModuloModel import Modulo
+from infra.models.ContenidoModel import Contenido
 from scripts.execute import Ejecutar
 
 ejecutar = Ejecutar()
 
 @ejecutar.crearColeccion()
-def crearColeccionCurso():
-    return Curso()
+def crearColeccionModulo():
+    return Modulo()
+
+@ejecutar.crearColeccion()
+def crearColeccionContenido():
+    return Contenido()

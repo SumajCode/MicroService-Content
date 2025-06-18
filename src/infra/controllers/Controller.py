@@ -1,22 +1,25 @@
 from flask import jsonify
 from infra.db.Querys import Query
-from domain.mega.MegaService import ServicioMega
+# from domain.mega.MegaService import ServicioMega
 
 class Controller:
     def __init__(self, nombreColeccion):
         self.execQueries = Query(nombreColeccion)
     
-    def obtenerRequest(request):
-        return request.get_json() if request.is_json else request.form()
+    def obtenerRequest(self, request):
+        return request.get_json() if request.is_json else dict(request.form)
     
-    def obtenerDatosImportantes(request: dict):
+    def obtenerDatosImportantes(self, request: dict):
         todo = False
         datos = {}
-        if 'todo' in request.keys() and request['todo']:
-            todo = request['todo'].lower() in ('true', '1', 't', 'yes', 'y')
-        if 'data' in request.keys() and request['data']:
-            datos = request['data']
-        return {'todo': todo, 'datos': datos}
+        filter = {}
+        if 'data' in request and request['data']:
+            datos = request.get('data')
+        if 'todo' in request and request['todo']:
+            todo = request.get('todo').lower() in ('true', '1', 't', 'yes', 'y')
+        if 'filter' in request and request['filter']:
+            filter = request.get('filter')
+        return {'todo': todo, 'datos': datos, 'filtro': filter}
 
     def get(self, opciones=None):
         datos = {}
@@ -35,7 +38,33 @@ class Controller:
         datos = {}
         if 'request' in opciones.keys() and opciones['request']:
             datos = self.obtenerRequest(opciones['request'])
+        claves = datos.keys()
+        for clave in opciones['rules']:
+            if clave not in claves:
+                return jsonify({
+                    'data': [],
+                    'message': f"Falta la columna obligatoria {clave}",
+                    'status': 400
+                })
+        for clave in claves:
+            if clave != 'filter' and clave != 'todo':
+                if clave not in opciones['columnas'] :
+                    return jsonify({
+                        'data': [],
+                        'message': f"Falta la columna {clave}",
+                        'status': 400
+                    })
         datos = self.obtenerDatosImportantes(datos)
+        datos['id'] = opciones['id']
+        message = "Error los datos no son un arreglo."
+        if datos['todo']:
+            if isinstance(datos['datos'], list):
+                message = self.execQueries.insertarEnColeccion(datos)
+            return jsonify({
+                'data': [],
+                'message': message,
+                'status': 200
+            })
         return jsonify({
             'data': [],
             'message': self.execQueries.insertarEnColeccion(datos),

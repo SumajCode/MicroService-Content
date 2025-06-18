@@ -1,4 +1,4 @@
-from db.Collection import CollectionMongo
+from infra.db.Collection import CollectionMongo
 
 class Modulo(CollectionMongo):
     nombreColeccion = 'modulo'
@@ -12,9 +12,11 @@ class Modulo(CollectionMongo):
                         'id_modulo': {'bsonType': 'objectId'},
                         'id_docente': {'bsonType': 'int'},
                         'id_materia': {'bsonType': 'int'},
-                        'title': {'bsonType': 'int'},
+                        'title': {'bsonType': 'string'},
                         'desciption': {'bsonType': 'string'},
-                        'image': {'bsonType': 'string'},
+                        'image': {
+                            'bsonType': 'string',
+                            'pattern': '^.*\\.(jpg|png|jpeg)$'},
                         'timestamp': {'bsonType': 'timestamp'}
                     }
                 }
@@ -22,7 +24,7 @@ class Modulo(CollectionMongo):
         },
         'values_index':[('id_modulo', 1), ('id_docente', 1), ('id_materia', 1)],
         'unique':'id_modulo',
-        'columns':['id_modulo', 'id_docente', 'id_materia']
+        'columns':['id_modulo', 'id_docente', 'id_materia', 'title', 'desciption', 'image', 'timestamp']
     }
 
     def __init__(self):
