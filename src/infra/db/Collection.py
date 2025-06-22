@@ -11,8 +11,8 @@ class CollectionMongo:
         self.unique = None
 
     def initCollection(self):
-        if 'validador' in self.opciones.keys():
-            self.validador = self.opciones['validadorTabla']
+        if 'validator' in self.opciones.keys():
+            self.validador = self.opciones['validator']
         if 'values_index' in self.opciones.keys():
             self.valuesIndex = self.opciones['values_index']
         if 'unique' in self.opciones.keys():

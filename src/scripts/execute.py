@@ -10,11 +10,11 @@ class Ejecutar():
         conn = self.connMongoDB
         return conn
     
-    def crearTabla(self):
+    def crearColeccion(self):
         def nuevaMigracion(model: CollectionMongo):
             modelo = model()
             print("En espera de la creacion de la Coleccion...")
-            nombresColecciones = self.connMongoDB().list_collection_names()
+            nombresColecciones = self.connMongoDB.list_collection_names()
             if modelo.nombreColeccion not in nombresColecciones:
                 print(modelo.crearColeccion())
                 return "Creacion de Coleccion exitosa."

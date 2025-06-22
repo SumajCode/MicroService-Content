@@ -5,13 +5,10 @@ from flask import Blueprint
 from infra.routes.RoutesContenido import blueprint as blueCont
 from infra.routes.RoutesModulo import blueprint as blueMod
 
-# * Se usaran middlewares para mejorar la seguridad de las rutas y para separar
-# * por clase o modulo como matricula y docente al igual que para post/puts/patch de gets
-
 def crearApp():
     app = Flask(__name__)
     CORS(app)
-    app.config.from_object('config.settings.Config')
+    app.config.from_object('MicroService-Content.src.config.settings.Config')
     padreBlueprint = Blueprint('apicontenido', __name__, url_prefix='/apicontenido/v1')
     
     @padreBlueprint.route('/')

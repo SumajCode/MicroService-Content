@@ -37,9 +37,9 @@ class Query:
     def actualizarDatosEnColeccion(self, opciones: dict):
         try:
             if opciones['todo']:
-                self.connColeccion.update_many(opciones['filtro'], opciones['datos'])
+                self.connColeccion.update_many(opciones['filtro'], {'$set': opciones['datos']})
                 return "Lista de datos actualizados correctamente."
-            self.connColeccion.update_one(opciones['filtro'], opciones['datos'])
+            self.connColeccion.update_one(opciones['filtro'], {'$set': opciones['datos']})
             return "Datos actualizados correctamente."
         except Exception as e:
             return f"Hubo un fallo al actualizar los datos: {e}"
@@ -87,4 +87,4 @@ class Query:
                 coleccion.create_index([index])
 
     def crearColeccion(self, datos: dict):
-        self.connDB.create_collection(datos['nombre_coleccion'], datos['validador'])
+        self.connDB.create_collection(datos['nombre_coleccion'], validator=datos['validador'])

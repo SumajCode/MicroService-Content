@@ -3,22 +3,20 @@ from infra.db.Collection import CollectionMongo
 class Modulo(CollectionMongo):
     nombreColeccion = 'modulo'
     opciones = {
-        'validadorTabla':{
-            'validator': {
-                '$jsonSchema': {
-                    'bsonType': 'object',
-                    'required': ['id_modulo', 'id_docente', 'id_materia', 'title'],
-                    'properties': {
-                        'id_modulo': {'bsonType': 'objectId'},
-                        'id_docente': {'bsonType': 'int'},
-                        'id_materia': {'bsonType': 'int'},
-                        'title': {'bsonType': 'string'},
-                        'desciption': {'bsonType': 'string'},
-                        'image': {
-                            'bsonType': 'string',
-                            'pattern': '^.*\\.(jpg|png|jpeg)$'},
-                        'timestamp': {'bsonType': 'timestamp'}
-                    }
+        'validator': {
+            '$jsonSchema': {
+                'bsonType': 'object',
+                'required': ['id_modulo', 'id_docente', 'id_materia', 'title'],
+                'properties': {
+                    'id_modulo': {'bsonType': 'objectId'},
+                    'id_docente': {'bsonType': 'int'},
+                    'id_materia': {'bsonType': 'int'},
+                    'title': {'bsonType': 'string'},
+                    'desciption': {'bsonType': 'string'},
+                    'image': {
+                        'bsonType': 'string',
+                        'pattern': '^.*\\.(jpg|png|jpeg)$'},
+                    'timestamp': {'bsonType': 'timestamp'}
                 }
             }
         },

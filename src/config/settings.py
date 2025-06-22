@@ -37,8 +37,12 @@ class Config:
     MONGO_APP_NAME = os.getenv('MONGO_APP_NAME')
     MONGO_SRV = os.getenv('MONGO_SRV')
     MONGO_URI = os.getenv('MONGO_URI')
-    MEGA_EMAIL = os.getenv('MEGA_EMAIL')
-    MEGA_PASSWORD = os.getenv('MEGA_PASSWORD')
+
+    CLOUD_ACCOUNT_ID = os.getenv('CLOUD_ACCOUNT_ID')
+    CLOUD_ACCESS_KEY_ID = os.getenv('CLOUD_ACCESS_KEY_ID')
+    CLOUD_SECRET_ACCESS_KEY = os.getenv('CLOUD_SECRET_ACCESS_KEY')
+    CLOUD_R2_BUCKET_NAME = os.getenv('CLOUD_R2_BUCKET_NAME')
+
     API_USUARIOS_URL = os.getenv('API_USUARIOS_URL')
     FLASK_ENV = os.getenv('FLASK_ENV')
     PORT = os.getenv('PORT')
