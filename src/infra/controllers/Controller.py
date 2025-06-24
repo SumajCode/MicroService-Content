@@ -28,17 +28,24 @@ class Controller:
         datos = self.obtenerDatosImportantes(datos)
         datos['proyeccion'] = opciones['proyeccion']
         datosQuery = self.execQueries.encontrarDatos(datos)
+        datosEnvio = datosQuery['data']
+        if datosEnvio is None:
+            datosEnvio = {}
         return jsonify({
-            'data':datosQuery['data'] ,
+            'data':datosEnvio,
             'message': datosQuery['message'],
             'status': 200
         })
     
     def post(self, opciones):
         datos = {}
+        datosImportantes = {}
+        print("Opciones: ", opciones)
         if 'request' in opciones.keys() and opciones['request']:
             datos = self.obtenerRequest(opciones['request'])
-        claves = datos['data'].keys()
+            datosImportantes = self.obtenerDatosImportantes(datos)
+        claves = datosImportantes['datos'].keys()
+        print(claves)
         for clave in opciones['rules']:
             if clave not in claves:
                 return jsonify({

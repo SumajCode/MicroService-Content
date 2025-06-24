@@ -1,5 +1,6 @@
 from domain.mongodb.MongoService import ServicioMongoDB
 from bson import ObjectId
+from datetime import datetime
 
 class Query:
     def __init__(self, nombreColeccion):
@@ -14,11 +15,11 @@ class Query:
             if opciones['todo']:
                 for dato in datos:
                     dato[id] = ObjectId()
-                    dato['timestamp'] = dato[id].generation_time
+                    dato['timestamp'] = datetime.utcnow()
                 self.connColeccion.insert_many(opciones['datos'])
                 return "Lista de datos agregados correctamente."
             datos[id] = ObjectId()
-            datos['timestamp'] = datos[id].generation_time
+            datos['timestamp'] = datetime.utcnow()
             self.connColeccion.insert_one(opciones['datos'])
             return "Datos agregados correctamente."
         except Exception as e:
@@ -39,6 +40,8 @@ class Query:
             if opciones['todo']:
                 self.connColeccion.update_many(opciones['filtro'], {'$set': opciones['datos']})
                 return "Lista de datos actualizados correctamente."
+            if 'id' in opciones['filtro']:
+                opciones['filtro']['_id'] = ObjectId(opciones['filtro'].pop('id'))
             self.connColeccion.update_one(opciones['filtro'], {'$set': opciones['datos']})
             return "Datos actualizados correctamente."
         except Exception as e:
@@ -47,18 +50,24 @@ class Query:
     def encontrarDatos(self, opciones: dict):
         try:
             if opciones['todo']:
+                datos = list(self.connColeccion.find(opciones['datos'], opciones['proyeccion']))
+                for dato in datos:
+                    dato['_id'] = str(dato['_id'])
                 return {
-                    'data':self.connColeccion.find(opciones['datos'], opciones['proyeccion']),
-                    'message': "Lista de datos contrados."
+                    'data':datos,
+                    'message': "Lista de datos encontrados."
                 }
+            datos = self.connColeccion.find_one(opciones['datos'], opciones['proyeccion'])
+            print('Datos: ', datos)
+            datos['_id'] = str(datos['_id'])
             return {
-                'datos': self.connColeccion.find_one(opciones['datos'], opciones['proyeccion']),
-                'message': "Datos contrados."
+                'data': datos,
+                'message': "Datos encontrados."
             }
         except Exception as e:
             return {
                 'data':None,
-                'message': f"Hubo un fallo al insertar los datos: {e}"
+                'message': f"Hubo un fallo al encontrar los datos: {e}"
             }
 
     def contarRegistros(self, nombreColeccion: str):
