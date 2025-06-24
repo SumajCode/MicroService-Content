@@ -16,7 +16,7 @@ class Modulo(CollectionMongo):
                     'image': {
                         'bsonType': 'string',
                         'pattern': '^.*\\.(jpg|png|jpeg)$'},
-                    'timestamp': {'bsonType': 'timestamp'}
+                    'timestamp': {'bsonType': 'date'}
                 }
             }
         },

@@ -8,7 +8,7 @@ from infra.routes.RoutesModulo import blueprint as blueMod
 def crearApp():
     app = Flask(__name__)
     CORS(app)
-    app.config.from_object('MicroService-Content.src.config.settings.Config')
+    app.config.from_object('config.settings.Config')
     padreBlueprint = Blueprint('apicontenido', __name__, url_prefix='/apicontenido/v1')
     
     @padreBlueprint.route('/')

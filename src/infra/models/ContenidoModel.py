@@ -61,7 +61,7 @@ class Contenido(CollectionMongo):
                     },
                     'status': {'bsonType': 'string'},
                     'points': {'bsonType': 'double'},
-                    'timestamp': {'bsonType': 'timestamp'},
+                    'timestamp': {'bsonType': 'date'},
                 }
             }
         },
