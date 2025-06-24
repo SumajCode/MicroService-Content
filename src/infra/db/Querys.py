@@ -48,11 +48,11 @@ class Query:
         try:
             if opciones['todo']:
                 return {
-                    'data':self.connColeccion.insert_many(opciones['datos'], opciones['proyeccion']),
+                    'data':self.connColeccion.find(opciones['datos'], opciones['proyeccion']),
                     'message': "Lista de datos contrados."
                 }
             return {
-                'datos': self.connColeccion.insert_one(opciones['datos'], opciones['proyeccion']),
+                'datos': self.connColeccion.find_one(opciones['datos'], opciones['proyeccion']),
                 'message': "Datos contrados."
             }
         except Exception as e:
