@@ -52,14 +52,13 @@ class Query:
             if opciones['todo']:
                 datos = list(self.connColeccion.find(opciones['datos'], opciones['proyeccion']))
                 for dato in datos:
-                    dato['_id'] = str(dato['_id'])
+                    datos = self.cambiarAObjectId(dato)
                 return {
                     'data':datos,
                     'message': "Lista de datos encontrados."
                 }
             datos = self.connColeccion.find_one(opciones['datos'], opciones['proyeccion'])
-            print('Datos: ', datos)
-            datos['_id'] = str(datos['_id'])
+            datos = self.cambiarAObjectId(datos)
             return {
                 'data': datos,
                 'message': "Datos encontrados."
@@ -69,6 +68,12 @@ class Query:
                 'data':None,
                 'message': f"Hubo un fallo al encontrar los datos: {e}"
             }
+
+    def cambiarAObjectId(self, dato):
+        for key, value in dato.items():
+            if isinstance(value, ObjectId):
+                dato[key] = str(value)
+        return dato
 
     def contarRegistros(self, nombreColeccion: str):
         try:

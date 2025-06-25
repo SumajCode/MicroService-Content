@@ -7,6 +7,8 @@ class Controller:
         self.execQueries = Query(nombreColeccion)
     
     def obtenerRequest(self, request):
+        if request.args:
+            return request.args.to_dict()
         return request.get_json() if request.is_json else dict(request.form)
     
     def obtenerDatosImportantes(self, request: dict):

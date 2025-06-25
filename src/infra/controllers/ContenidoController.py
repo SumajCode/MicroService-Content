@@ -1,5 +1,6 @@
 from infra.controllers.Controller import Controller
 from infra.models.ContenidoModel import Contenido
+from datetime import datetime
 
 class ContenidoController(Controller):
     
@@ -15,8 +16,32 @@ class ContenidoController(Controller):
             'proyeccion':{}})
 
     def crearRegistro(self, request):
+        datos = request.get_json()
+        try:
+            if 'time_deliver' in datos['data']:
+                fechaString = datos['data']['time_deliver']
+                if "T" in fechaString:
+                    fecha = datetime.fromisoformat(fechaString.replace("Z", "+00:00"))
+                else:
+                    fecha = datetime.strptime(fechaString, "%Y-%m-%d")
+                datos["data"]["time_deliver"] = fecha
+        except Exception as excep:
+            print(f'Hubo un error con la fecha: {excep}')
+        if "files" in datos["data"]:
+            datos["data"]["files"] = [f for f in datos["data"]["files"] if f]
+
+        class RequestWrapper:
+            def __init__(self, json_data):
+                self._json_data = json_data
+                self.args = {}
+                self.form = {}
+                self.is_json = True
+
+            def get_json(self):
+                return self._json_data
+
         return self.post({
-            'request': request,
+            'request': RequestWrapper(datos),
             'id': self.columnas[0],
             'rules': self.columnas[1:4],
             'columnas': self.columnas})
