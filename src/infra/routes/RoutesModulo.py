@@ -10,7 +10,7 @@ blueprint = Blueprint('modulo', __name__, url_prefix='/modulo')
 def eliminarModulo():
     return controlador.eliminarRegistro(request)
 
-@blueprint.route('/listar', methods=['GET'])
+@blueprint.route('/listar', methods=['GET', 'POST'])
 def obtenerModulos():
     return controlador.obtener(request)
 

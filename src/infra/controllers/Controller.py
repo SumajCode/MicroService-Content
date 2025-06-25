@@ -8,6 +8,7 @@ class Controller:
     
     def obtenerRequest(self, request):
         if request.args:
+            print("Request args: ", request.args.to_dict())
             return request.args.to_dict()
         return request.get_json() if request.is_json else dict(request.form)
     

@@ -50,11 +50,12 @@ class Query:
     def encontrarDatos(self, opciones: dict):
         try:
             if opciones['todo']:
-                datos = list(self.connColeccion.find(opciones['datos'], opciones['proyeccion']))
-                for dato in datos:
-                    datos = self.cambiarAObjectId(dato)
+                datosTemp = list(self.connColeccion.find(opciones['datos'], opciones['proyeccion']))
+                datosEnvio = []
+                for dato in datosTemp:
+                    datosEnvio.append(self.cambiarAObjectId(dato))
                 return {
-                    'data':datos,
+                    'data':datosEnvio,
                     'message': "Lista de datos encontrados."
                 }
             datos = self.connColeccion.find_one(opciones['datos'], opciones['proyeccion'])
