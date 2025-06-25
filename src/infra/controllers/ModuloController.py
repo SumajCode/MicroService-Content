@@ -1,5 +1,6 @@
 from infra.controllers.Controller import Controller
 from infra.models.ModuloModel import Modulo
+from flask import jsonify
 
 class ModuloController(Controller):
     
@@ -21,6 +22,26 @@ class ModuloController(Controller):
         return self.get({
             'request':request, 
             'proyeccion':proyeccion})
+
+    def obtenerRelacionContenido(self, request):
+        try:
+            respuesta = self.obtenerRelacionContenido({
+            'colecion':self.nombreColeccion,
+            'id_local':self.columnas[0],
+            'id_relacion': self.columnas[0],
+            'as':'contenido'
+            })
+            return jsonify({
+                'data':respuesta['data'],
+                'message':respuesta['message'],
+                'status': 200
+            })
+        except:
+            return jsonify({
+                'data':{},
+                'message':'Hubo un erro en la recoleccion de datos.',
+                'status': 500
+            })
 
     def crearRegistro(self, request):
         return self.post({

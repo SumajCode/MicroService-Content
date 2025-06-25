@@ -49,20 +49,31 @@ class Query:
 
     def encontrarDatos(self, opciones: dict):
         try:
+            print('Opciones:', opciones)
+            if '_id' in opciones['filtro'].keys() and opciones['filtro']['_id']:
+                opciones['filtro']['_id'] = ObjectId(opciones['filtro']['_id'])
+            print('Opciones:', opciones)
             if opciones['todo']:
-                datosTemp = list(self.connColeccion.find(opciones['datos'], opciones['proyeccion']))
+                datosTemp = list(self.connColeccion.find(opciones['filtro'], opciones['proyeccion']))
                 datosEnvio = []
                 for dato in datosTemp:
+                    print(dato)
                     datosEnvio.append(self.cambiarAObjectId(dato))
                 return {
                     'data':datosEnvio,
                     'message': "Lista de datos encontrados."
                 }
-            datos = self.connColeccion.find_one(opciones['datos'], opciones['proyeccion'])
+            datos = self.connColeccion.find_one(opciones['filtro'], opciones['proyeccion'])
+            print(datos)
             datos = self.cambiarAObjectId(datos)
+            if len(datos) > 0:
+                return {
+                    'data': datos,
+                    'message': "Datos encontrados."
+                }
             return {
-                'data': datos,
-                'message': "Datos encontrados."
+                'data': {},
+                'message': "No existe un registro con ese id."
             }
         except Exception as e:
             return {
@@ -70,11 +81,38 @@ class Query:
                 'message': f"Hubo un fallo al encontrar los datos: {e}"
             }
 
+    def encontrarDatosRelacion(self, opciones: dict):
+        try:
+            pipeline = [
+                {
+                    '$lookup': {
+                        'from': opciones['coleccion'],
+                        'localField': opciones['id_local'],
+                        'foreignField': opciones['id_relacion'],
+                        'as': opciones['as']
+                    }
+                }
+            ]
+            resultados = list(self.connColeccion.aggregate(pipeline))
+            nuevosResultados = self.cambiarAObjectId(resultados)
+            nuevosResultados[opciones['as']] = self.cambiarAObjectId(nuevosResultados[opciones['as']])
+            return {
+                'data': nuevosResultados,
+                'message': "Módulos con sus contenidos obtenidos correctamente."
+            }
+        except Exception as e:
+            return {
+                'data': None,
+                'message': f"Error al obtener módulos con contenidos: {e}"
+            }
+
     def cambiarAObjectId(self, dato):
-        for key, value in dato.items():
-            if isinstance(value, ObjectId):
-                dato[key] = str(value)
-        return dato
+        if dato:
+            for key, value in dato.items():
+                if isinstance(value, ObjectId):
+                    dato[key] = str(value)
+            return dato
+        return []
 
     def contarRegistros(self, nombreColeccion: str):
         try:

@@ -1,5 +1,6 @@
 from infra.controllers.Controller import Controller
 from infra.models.ContenidoModel import Contenido
+from bson import ObjectId
 from datetime import datetime
 
 class ContenidoController(Controller):
@@ -29,7 +30,7 @@ class ContenidoController(Controller):
             print(f'Hubo un error con la fecha: {excep}')
         if "files" in datos["data"]:
             datos["data"]["files"] = [f for f in datos["data"]["files"] if f]
-
+        datos['data']['id_modulo'] = ObjectId(datos['data']['id_modulo'])
         class RequestWrapper:
             def __init__(self, json_data):
                 self._json_data = json_data

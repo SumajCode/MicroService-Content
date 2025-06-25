@@ -9,7 +9,7 @@ class Contenido(CollectionMongo):
                 'required': ['id_contenido', 'id_modulo', 'title', 'type'],
                 'properties': {
                     'id_contenido': {'bsonType': 'objectId'},
-                    'id_modulo': {'bsonType': 'string'},
+                    'id_modulo': {'bsonType': 'objectId'},
                     'title': {'bsonType': 'string'},
                     'files': {
                         'bsonType': 'array',
