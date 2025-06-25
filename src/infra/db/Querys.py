@@ -49,12 +49,17 @@ class Query:
 
     def encontrarDatos(self, opciones: dict):
         try:
-            print('Opciones:', opciones)
-            if '_id' in opciones['filtro'].keys() and opciones['filtro']['_id']:
-                opciones['filtro']['_id'] = ObjectId(opciones['filtro']['_id'])
-            print('Opciones:', opciones)
+            filtro = {}
+            for clave, valor in opciones.get('filtro', {}).items():
+                if isinstance(valor, str) and len(valor) == 24:
+                    try:
+                        filtro[clave] = ObjectId(valor)
+                    except Exception:
+                        filtro[clave] = valor
+                else:
+                    filtro[clave] = valor
             if opciones['todo']:
-                datosTemp = list(self.connColeccion.find(opciones['filtro'], opciones['proyeccion']))
+                datosTemp = list(self.connColeccion.find(filtro, opciones['proyeccion']))
                 datosEnvio = []
                 for dato in datosTemp:
                     print(dato)
@@ -63,8 +68,7 @@ class Query:
                     'data':datosEnvio,
                     'message': "Lista de datos encontrados."
                 }
-            datos = self.connColeccion.find_one(opciones['filtro'], opciones['proyeccion'])
-            print(datos)
+            datos = self.connColeccion.find_one(filtro, opciones['proyeccion'])
             datos = self.cambiarAObjectId(datos)
             if len(datos) > 0:
                 return {
@@ -94,10 +98,8 @@ class Query:
                 }
             ]
             resultados = list(self.connColeccion.aggregate(pipeline))
-            nuevosResultados = self.cambiarAObjectId(resultados)
-            nuevosResultados[opciones['as']] = self.cambiarAObjectId(nuevosResultados[opciones['as']])
             return {
-                'data': nuevosResultados,
+                'data': [self.cambiarAObjectId(r) for r in resultados],
                 'message': "Módulos con sus contenidos obtenidos correctamente."
             }
         except Exception as e:
@@ -107,12 +109,17 @@ class Query:
             }
 
     def cambiarAObjectId(self, dato):
-        if dato:
-            for key, value in dato.items():
-                if isinstance(value, ObjectId):
-                    dato[key] = str(value)
+        if isinstance(dato, dict):
+            return {
+                key: self.cambiarAObjectId(value)
+                for key, value in dato.items()
+            }
+        elif isinstance(dato, list):
+            return [self.cambiarAObjectId(item) for item in dato]
+        elif isinstance(dato, ObjectId):
+            return str(dato)
+        else:
             return dato
-        return []
 
     def contarRegistros(self, nombreColeccion: str):
         try:

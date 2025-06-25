@@ -39,6 +39,20 @@ class Controller:
             'message': datosQuery['message'],
             'status': 200
         })
+
+    def especialGet(self, opciones: dict):
+        respuesta = self.execQueries.encontrarDatosRelacion({
+            'coleccion':opciones['coleccion'],
+            'id_local':opciones['id_local'],
+            'id_relacion': opciones['id_relacion'],
+            'as':opciones['as']
+        })
+        print(respuesta)
+        return jsonify({
+            'data':respuesta['data'],
+            'message':respuesta['message'],
+            'status': 200
+        })
     
     def post(self, opciones):
         datos = {}

@@ -14,6 +14,10 @@ def eliminarModulo():
 def obtenerModulos():
     return controlador.obtener(request)
 
+@blueprint.route('/contenido', methods=['GET', 'POST'])
+def obtenerModulosContenido():
+    return controlador.obtenerRelacionContenido()
+
 @blueprint.route('/crear', methods=['POST'])
 def crearModulo():
     return controlador.crearRegistro(request)
