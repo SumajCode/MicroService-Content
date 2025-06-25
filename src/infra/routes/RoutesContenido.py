@@ -10,7 +10,7 @@ blueprint = Blueprint('archivo', __name__, url_prefix='/archivo')
 def eliminarArchivo():
     return controlador.eliminarRegistro(request)
 
-@blueprint.route('/listar', methods=['GET'])
+@blueprint.route('/listar', methods=['GET', 'POST'])
 def obtenerArchivos():
     return controlador.obtener(request)
 
