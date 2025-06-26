@@ -18,6 +18,10 @@ def obtenerModulos():
 def obtenerModulosContenido():
     return controlador.obtenerRelacionContenido()
 
+@blueprint.route('/materias', methods=['GET', 'POST'])
+def obtenerModulosMateria():
+    return controlador.obtenerModulosPorMateria(request)
+
 @blueprint.route('/crear', methods=['POST'])
 def crearModulo():
     return controlador.crearRegistro(request)

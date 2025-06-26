@@ -96,16 +96,21 @@ class Query:
 
     def encontrarDatosRelacion(self, opciones: dict):
         try:
-            pipeline = [
-                {
-                    '$lookup': {
-                        'from': opciones['coleccion'],
-                        'localField': opciones['id_local'],
-                        'foreignField': opciones['id_relacion'],
-                        'as': opciones['as']
+            pipeline = []
+            if 'match' in opciones.keys() and 'id_match':
+                pipeline.append({
+                    'match': {
+                        opciones['id_match']: opciones['match']
                     }
+                })
+            pipeline.append({
+                '$lookup': {
+                    'from': opciones['coleccion'],
+                    'localField': opciones['id_local'],
+                    'foreignField': opciones['id_relacion'],
+                    'as': opciones['as']
                 }
-            ]
+            })
             resultados = list(self.connColeccion.aggregate(pipeline))
             return {
                 'data': [self.cambiarAObjectId(r) for r in resultados],

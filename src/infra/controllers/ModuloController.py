@@ -31,6 +31,18 @@ class ModuloController(Controller):
             'as':'contenido'
         })
 
+    def obtenerModulosPorMateria(self, request):
+        datos = request.get_json() if request.is_json else request.form if request.form else request.args
+        idsMaterias = datos.get('materias')
+        return self.especialGet({
+            'coleccion': 'contenido',
+            'id_local':'_id',
+            'id_relacion': 'id_modulo',
+            'as':'contenido',
+            'match': idsMaterias,
+            'campo_match': 'id_materia'
+        })
+
     def crearRegistro(self, request):
         return self.post({
             'request': request,
