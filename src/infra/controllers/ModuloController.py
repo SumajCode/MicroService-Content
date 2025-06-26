@@ -48,7 +48,7 @@ class ModuloController(Controller):
                         'desciption': '$desciption',
                         'id_materia': '$id_materia',
                         'title': '$title',
-                        'contenido': 'contenido'
+                        'contenido': '$contenido'
                     }
                 }
             },
