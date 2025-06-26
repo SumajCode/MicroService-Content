@@ -97,7 +97,7 @@ class Query:
     def encontrarDatosRelacion(self, opciones: dict):
         try:
             pipeline = []
-            if 'match' in opciones.keys() and 'id_match' in opciones.keys():
+            if 'match' in opciones.keys() and 'campo_match' in opciones.keys():
                 pipeline.append({
                     'match': {
                         opciones['campo_match']: opciones['match']
