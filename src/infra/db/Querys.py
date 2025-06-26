@@ -100,7 +100,7 @@ class Query:
             if 'match' in opciones.keys() and 'campo_match' in opciones.keys():
                 pipeline.append({
                     '$match': {
-                        opciones['campo_match']: opciones['match']
+                        opciones['campo_match']: {'$in': opciones['match']}
                     }
                 })
             pipeline.append({
@@ -111,6 +111,14 @@ class Query:
                     'as': opciones['as']
                 }
             })
+            if 'group' in opciones.keys():
+                pipeline.append({
+                    '$group': opciones['group']
+                })
+            if 'project' in opciones.keys():
+                pipeline.append({
+                    '$project': opciones['project']
+                })
             resultados = list(self.connColeccion.aggregate(pipeline))
             return {
                 'data': [self.cambiarAObjectId(r) for r in resultados],

@@ -40,7 +40,23 @@ class ModuloController(Controller):
             'id_relacion': 'id_modulo',
             'as':'contenido',
             'match': idsMaterias,
-            'campo_match': 'id_materia'
+            'campo_match': 'id_materia',
+            'group':{
+                '_id': '$id_materia',
+                'modulos':{
+                    '$push': {
+                        'desciption': '$desciption',
+                        'id_materia': '$id_materia',
+                        'title': '$title',
+                        'contenido': 'contenido'
+                    }
+                }
+            },
+            'project': {
+                'id_materia': '$_id',
+                'modulos': 1,
+                '_id': 0
+            }
         })
 
     def crearRegistro(self, request):
