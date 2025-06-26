@@ -99,7 +99,7 @@ class Query:
             pipeline = []
             if 'match' in opciones.keys() and 'campo_match' in opciones.keys():
                 pipeline.append({
-                    'match': {
+                    '$match': {
                         opciones['campo_match']: opciones['match']
                     }
                 })
