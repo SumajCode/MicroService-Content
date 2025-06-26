@@ -46,7 +46,11 @@ class Config:
     API_USUARIOS_URL = os.getenv('API_USUARIOS_URL')
     FLASK_ENV = os.getenv('FLASK_ENV')
     PORT = os.getenv('PORT')
-    
+
+    MEGA_EMAIL = os.getenv('MEGA_EMAIL')
+    MEGA_PASSWORD = os.getenv('MEGA_PASSWORD')
+    TEMP_PATH = os.getenv('TEMP_PATH')
+
     # Tipos de contenido permitidos
     TIPOS_CONTENIDO = ['personal', 'educativo']
     

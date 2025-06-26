@@ -36,7 +36,8 @@ class ModuloController(Controller):
             'request': request,
             'id': self.columnas[0],
             'rules': self.columnas[1:4],
-            'columnas': self.columnas})
+            'columnas': self.columnas
+            })
 
     def actualizarRegistro(self, request):
         return self.patch({'request': request})

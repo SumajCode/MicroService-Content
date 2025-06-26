@@ -8,21 +8,24 @@ class Controller:
     
     def obtenerRequest(self, request):
         if request.args:
-            print("Request args: ", request.args.to_dict())
             return request.args.to_dict()
         return request.get_json() if request.is_json else dict(request.form)
     
     def obtenerDatosImportantes(self, request: dict):
-        todo = False
-        datos = {}
-        filter = {}
+        datosEnvio = {}
         if 'data' in request and request['data']:
-            datos = request.get('data')
+            datosEnvio['datos'] = request.get('data')
         if 'todo' in request and request['todo']:
-            todo = request.get('todo').lower() in ('true', '1', 't', 'yes', 'y')
+            datosEnvio['todo'] = request.get('todo').lower() in ('true', '1', 't', 'yes', 'y')
         if 'filter' in request and request['filter']:
-            filter = request.get('filter')
-        return {'todo': todo, 'datos': datos, 'filtro': filter}
+            datosEnvio['filtro'] = request.get('filter')
+        if 'files' in request and request['files']:
+            datosEnvio['archivos'] = request.files.getlist('files')
+            if 'carpeta_nombre' in request and request['carpeta_nombre']:
+                datosEnvio['carpeta_nombre'] = request['carpeta_nombre']
+            if 'modulo' in request and request['modulo']:
+                datosEnvio['modulo'] = request.get('modulo')
+        return datosEnvio
 
     def get(self, opciones=None):
         datos = {}
@@ -57,12 +60,10 @@ class Controller:
     def post(self, opciones):
         datos = {}
         datosImportantes = {}
-        print("Opciones: ", opciones)
         if 'request' in opciones.keys() and opciones['request']:
             datos = self.obtenerRequest(opciones['request'])
             datosImportantes = self.obtenerDatosImportantes(datos)
         claves = datosImportantes['datos'].keys()
-        print(claves)
         for clave in opciones['rules']:
             if clave not in claves:
                 return jsonify({

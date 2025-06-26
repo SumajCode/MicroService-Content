@@ -1,4 +1,5 @@
 from domain.mongodb.MongoService import ServicioMongoDB
+from infra.db.MegaQueries import subirArchivos, convertirDictArchivo
 from bson import ObjectId
 from datetime import datetime
 
@@ -12,6 +13,14 @@ class Query:
         try:
             datos = opciones['datos']
             id = opciones['id']
+            if 'files' in datos.keys():
+                archivos = list(datos['files'])
+                datosArchivos = {'archivos': convertirDictArchivo(archivos)}
+                if 'carpeta_nombre' in opciones:
+                    datosArchivos['carpeta_nombre'] = opciones['carpeta_nombre']
+                if 'modulo' in opciones:
+                    datosArchivos['modulo'] = opciones['modulo']
+                datos['files'] = subirArchivos(datosArchivos)
             if opciones['todo']:
                 for dato in datos:
                     dato[id] = ObjectId()
@@ -27,22 +36,22 @@ class Query:
 
     def eliminarDatosEnColeccion(self, opciones: dict):
         try:
+            filtro = self.cambiarAObjectId(opciones['filtro'])
             if opciones['todo']:
-                self.connColeccion.delete_many(opciones['filtro'])
+                self.connColeccion.delete_many(filtro)
                 return "Lista de datos eliminados correctamente."
-            self.connColeccion.delete_one(opciones['filtro'])
+            self.connColeccion.delete_one(filtro)
             return "Datos eliminados correctamente."
         except Exception as e:
             return f"Hubo un fallo al eliminar los datos: {e}"
 
     def actualizarDatosEnColeccion(self, opciones: dict):
         try:
+            filtro = self.cambiarAObjectId(opciones['filtro'])
             if opciones['todo']:
-                self.connColeccion.update_many(opciones['filtro'], {'$set': opciones['datos']})
+                self.connColeccion.update_many(filtro, {'$set': opciones['datos']})
                 return "Lista de datos actualizados correctamente."
-            if 'id' in opciones['filtro']:
-                opciones['filtro']['_id'] = ObjectId(opciones['filtro'].pop('id'))
-            self.connColeccion.update_one(opciones['filtro'], {'$set': opciones['datos']})
+            self.connColeccion.update_one(filtro, {'$set': opciones['datos']})
             return "Datos actualizados correctamente."
         except Exception as e:
             return f"Hubo un fallo al actualizar los datos: {e}"
